@@ -173,7 +173,6 @@ Parameter number: %3hhu\n",
 
 }
 
-
 SysexType_t get_header_info(const SysexHeader_t* header_p)
 {
     printf("Manufacturer: %#4x\n", header_p->id);
@@ -210,4 +209,108 @@ BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p)
     return type;
 }
 
+PackedVoiceParameters_t pack_voice_parameters(VoiceParameters_t parameters)
+{
+    PackedVoiceParameters_t packed_parameters;
+
+    for(int operator = OPERATOR_1; operator <= OPERATOR_6; ++operator)
+    {
+       PackedOperatorParameters_t* packed_operator_p = packed_parameters.Operator + operator;
+       OperatorParameters_t*       operator_p        = parameters.Operator        + operator;
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_rate_1);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_rate_2);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_rate_3);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_rate_4);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_level_1);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_level_2);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_level_3);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, eg_level_4);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, break_point);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, left_depth);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, right_depth);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, left_curve);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, right_curve);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, rate_scaling);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, modulation_sensitivity);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, touch_sensitivity);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, total_level);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, frequency_mode);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, frequency_coarse);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, frequency_fine);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *packed_operator_p, detune);
+    }
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_rate_1);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_rate_2);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_rate_3);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_rate_4);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_level_1);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_level_2);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_level_3);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, peg_level_4);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, algorithm);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, feedback_level);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, oscillator_phase_init);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_speed);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_delay_time);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, pitch_modulation_depth);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, amplitude_modulation_depth);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_key_sync);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_wave);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_pitch_modulation_sensitivity);
+    CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, transpose);
+
+    return packed_parameters;
+}
+
+VoiceParameters_t unpack_voice_parameters(PackedVoiceParameters_t parameters)
+{
+    VoiceParameters_t unpacked_parameters;
+    for(int operator = OPERATOR_1; operator <= OPERATOR_6; ++operator)
+    {
+       OperatorParameters_t*       unpacked_operator_p = unpacked_parameters.Operator + operator;
+       PackedOperatorParameters_t* operator_p          = parameters.Operator          + operator;
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_rate_1);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_rate_2);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_rate_3);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_rate_4);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_level_1);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_level_2);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_level_3);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, eg_level_4);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, break_point);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, left_depth);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, right_depth);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, left_curve);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, right_curve);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, rate_scaling);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, modulation_sensitivity);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, touch_sensitivity);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, total_level);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, frequency_mode);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, frequency_coarse);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, frequency_fine);
+       CONVERT_STRUCT_PARAMETER(*operator_p, *unpacked_operator_p, detune);
+    }
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_rate_1);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_rate_2);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_rate_3);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_rate_4);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_level_1);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_level_2);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_level_3);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, peg_level_4);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, algorithm);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, feedback_level);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, oscillator_phase_init);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_speed);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_delay_time);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, pitch_modulation_depth);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, amplitude_modulation_depth);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_key_sync);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_wave);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_pitch_modulation_sensitivity);
+    CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, transpose);
+
+    return unpacked_parameters;
+}
 

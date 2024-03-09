@@ -15,6 +15,8 @@
 #define VOICE_NAME_SIZE 10
 #define VOICE_COUNT     32
 
+#define CONVERT_STRUCT_PARAMETER(SOURCE_STRUCT, DESTINATION_STRUCT, PARAMETER)\
+    ((DESTINATION_STRUCT).PARAMETER = (SOURCE_STRUCT).PARAMETER)
 
 /* enum */
 typedef enum Operator_t
@@ -157,7 +159,7 @@ typedef struct PackedOperatorParameters_t
     uint8_t right_curve            : 2;
     uint8_t                        : 4;
 
-    uint8_t rate_scalin            : 3; //0 - 7
+    uint8_t rate_scaling           : 3; //0 - 7
     uint8_t detune                 : 4; //0 - 14
     uint8_t                        : 1;
 
@@ -258,5 +260,8 @@ extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
 void process_sysex_data(const void* data_p);
 SysexType_t get_header_info(const SysexHeader_t* header_p);
 BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p);
+
+PackedVoiceParameters_t pack_voice_parameters(VoiceParameters_t parameters);
+VoiceParameters_t unpack_voice_parameters(PackedVoiceParameters_t parameters);
 
 #endif /* HEADERS_DX7_H_ */
