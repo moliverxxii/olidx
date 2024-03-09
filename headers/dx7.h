@@ -22,11 +22,11 @@
 typedef enum Operator_t
 {
     OPERATOR_1 = 0,
-    OPERATOR_2 = 1,
-    OPERATOR_3 = 2,
-    OPERATOR_4 = 3,
-    OPERATOR_5 = 4,
-    OPERATOR_6 = 5,
+    OPERATOR_2,
+    OPERATOR_3,
+    OPERATOR_4,
+    OPERATOR_5,
+    OPERATOR_6,
     OPERATOR_COUNT,
 } Operator_t;
 
