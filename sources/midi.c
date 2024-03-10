@@ -12,8 +12,8 @@
 uint8_t* get_sysex_payload(FILE* file_p, int* size_p)
 {
     int counter = 0;
-    int byte = getc(file_p);
-    counter += (byte != EOF);
+    int byte    = getc(file_p);
+    counter    += (byte != EOF);
     uint8_t* buffer_p = NULL;
 
     if(byte == MIDI_SYSTEM_EXCLUSIVE)

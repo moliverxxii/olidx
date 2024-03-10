@@ -5,22 +5,43 @@
  *      Author: moliver
  */
 #include <unistd.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "utility.h"
 
 const char* option_handler(int argc, char* argv[])
 {
     int opt;
-    while(-1 != (opt = getopt(argc, argv, "f:")))
+    int flag_b = 0;
+    char* folder_name_p = NULL;
+    while(-1 != (opt = getopt(argc, argv, ":f:u:")))
     {
         switch(opt)
         {
             case 'f':
                 return optarg;
+            case 'u':
+                printf("unpack %s\n", optarg);
+                folder_name_p = malloc(strlen(optarg) + 1);
+                strcpy(folder_name_p, optarg);
+                flag_b = 1;
+                break;
+            case ':':
+                printf("error %c\n", optopt);
+                folder_name_p = "output";
+                break;
             default:
             break;
         }
     }
+    mkdir(folder_name_p, S_IRWXU | S_IRWXG | S_IRWXO);
+    if(flag_b)
+    {
+        free(folder_name_p);
+    }
+
     return NULL;
 }
 

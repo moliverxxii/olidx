@@ -9,7 +9,15 @@
 int main(int argc, char* argv[])
 {
     const char* file_name = option_handler(argc, argv);
-    printf("file: %s\n", file_name);
+    if(file_name)
+    {
+        printf("file: %s\n", file_name);
+    }
+    else
+    {
+        printf("no file specified: OOST!\n");
+        return EXIT_FAILURE;
+    }
 	FILE* midi_file_p = fopen(file_name, "r");
 
 	int size;
@@ -26,6 +34,6 @@ int main(int argc, char* argv[])
 	    printf("---------\n");
 	} while(size > 0);
 	printf("fin\n");
-	return 0;
+	return EXIT_SUCCESS;
 }
 
