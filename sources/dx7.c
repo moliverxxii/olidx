@@ -119,7 +119,7 @@ Parameter number: %3hhu\n",
             const BulkDataHeader_t* bulk_header_p = data_p;
             data_p += sizeof(BulkDataHeader_t);
             bulk_type = get_bulk_data_header_info(bulk_header_p);
-            if(type == BULK_DATA_MALFORMED)
+            if(bulk_type == BULK_DATA_MALFORMED)
             {
                 return;
             }
