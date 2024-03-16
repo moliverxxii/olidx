@@ -10,18 +10,24 @@
 #include <string.h>
 
 #include "utility.h"
+#include "help.h"
 
 const char* option_handler(int argc, char* argv[])
 {
     int opt;
     int flag_b = 0;
     char* folder_name_p = NULL;
-    while(-1 != (opt = getopt(argc, argv, ":f:u:")))
+    char* file_name_p = NULL;
+    while(-1 != (opt = getopt(argc, argv, ":f:hu:")))
     {
         switch(opt)
         {
             case 'f':
-                return optarg;
+                file_name_p = optarg;
+                break;
+            case 'h':
+                printf("%s", get_help());
+                break;
             case 'u':
                 printf("unpack %s\n", optarg);
                 folder_name_p = malloc(strlen(optarg) + 1);
@@ -42,7 +48,7 @@ const char* option_handler(int argc, char* argv[])
         free(folder_name_p);
     }
 
-    return NULL;
+    return file_name_p;
 }
 
 

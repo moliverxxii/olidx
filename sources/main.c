@@ -21,12 +21,13 @@ int main(int argc, char* argv[])
 	FILE* midi_file_p = fopen(file_name, "r");
 
 	int size;
+	int sysex_counter = 0;
 	do
 	{
 	    uint8_t* buffer_p = get_sysex_payload(midi_file_p, &size);
         if(buffer_p)
         {
-            printf("NEW SYSEX\n");
+            printf("Payload no: %d\n", sysex_counter++);
             printf("Sysex size: %dB\n", size);
             process_sysex_data(buffer_p);
         }
