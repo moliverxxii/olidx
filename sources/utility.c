@@ -29,14 +29,20 @@ const char* option_handler(int argc, char* argv[])
                 printf("%s", get_help());
                 break;
             case 'u':
-                printf("unpack %s\n", optarg);
-                folder_name_p = malloc(strlen(optarg) + 1);
-                strcpy(folder_name_p, optarg);
+                if(!flag_b)
+                {
+                    printf("unpack %s\n", optarg);
+                    folder_name_p = malloc(strlen(optarg) + 1);
+                    strcpy(folder_name_p, optarg);
+                }
                 flag_b = 1;
                 break;
             case ':':
                 printf("error %c\n", optopt);
-                folder_name_p = "output";
+                if(!flag_b)
+                {
+                    folder_name_p = "output";
+                }
                 break;
             default:
             break;
