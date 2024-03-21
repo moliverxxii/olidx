@@ -222,14 +222,14 @@ typedef struct PackedVoiceParameters_t
     char    voice_name[VOICE_NAME_SIZE];          //ASCII
 } PackedVoiceParameters_t;
 
+//TODO: DEFINE.
 typedef struct SupplementVoiceParameters_t
 {
-    //TODO: DEFINE.
 } SupplementVoiceParameters_t;
 
+//TODO: DEFINE.
 typedef struct PackedSupplementVoiceParameters_t
 {
-    //TODO: DEFINE.
 } PackedSupplementVoiceParameters_t;
 
 //TODO: DEFINE.
@@ -241,9 +241,6 @@ typedef struct PerformanceParameters_t
 struct SystemSetup_t;
 
 typedef TwoByte_t MicroTuningParameter_t;
-
-
-
 typedef TwoByte_t FractionalScalingOffset_t;
 typedef TwoByte_t FractionalScalingParameter_t;
 
@@ -252,8 +249,6 @@ typedef struct FractionalScalingOperatorParameters_t
     FractionalScalingOffset_t offset;
     FractionalScalingParameter_t level[FRACTIONAL_SCALING_COUNT];
 } FractionalScalingOperatorParameters_t;
-
-
 
 typedef struct SysexHeader_t
 {
@@ -280,7 +275,6 @@ typedef union ParameterChangeData_t
     uint8_t data_3B[3];
     uint8_t fractional_scaling[4];
 } ParameterChangeData_t;
-
 
 /* table */
 typedef PackedVoiceParameters_t Packed32Voice_t[VOICE_COUNT];
