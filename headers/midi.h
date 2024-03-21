@@ -50,6 +50,23 @@ typedef enum MIDISysExID_t
     MIDI_ID_REAL_TIME      = 0x7F
 } MIDISysExID_t;
 
+typedef enum Note_t
+{
+ NOTE_C = 0,
+ NOTE_CS,
+ NOTE_D,
+ NOTE_DS,
+ NOTE_E,
+ NOTE_F,
+ NOTE_FS,
+ NOTE_G,
+ NOTE_GS,
+ NOTE_A,
+ NOTE_AS,
+ NOTE_B,
+ NOTE_COUNT
+} Note_t;
+
 //TODO: MIDI NOTES
 typedef enum MIDINote_t
 {
@@ -184,7 +201,15 @@ typedef enum MIDINote_t
     MIDI_NOTE_COUNT
 } MIDINote_t;
 
+#define MIDI_NOTE_NUMBER(NOTE,OCTAVE)\
+    (NOTE_COUNT * OCTAVE + MIDI_NOTE_C__0 + NOTE)
 
+#define NOTE_NUMBER(MIDI_NOTE)\
+    (MIDI_NOTE%NOTE_COUNT)
+
+//TODO: check that crap.
+#define NOTE_OCTAVE(MIDI_NOTE)\
+    ((MIDI_NOTE - MIDI_NOTE%NOTE_COUNT - MIDI_NOTE_C__O)/NOTE_COUNT)
 /**
  * returns contents between the MIDI SysEx start and EOX bytes (excluded).
  * @param file_p: the input stream.
