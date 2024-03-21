@@ -19,7 +19,11 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 	FILE* midi_file_p = fopen(file_name, "r");
-
+	if(!midi_file_p)
+	{
+	    printf("can't open file: %s\n", file_name);
+	    return EXIT_FAILURE;
+	}
 	int size;
 	int sysex_counter = 0;
 	do

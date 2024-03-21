@@ -11,9 +11,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "utility.h"
+#include "midi.h"
 /* macro */
-#define VOICE_NAME_SIZE 10
-#define VOICE_COUNT     32
+#define VOICE_NAME_SIZE                    10
+#define VOICE_COUNT                        32
+#define PERFORMANCE_COUNT                  32
+#define MICRO_TUNING_CARTRIDGE_COUNT       64
+#define FRACTIONAL_SCALING_CARTRIDGE_COUNT 64
 
 #define CONVERT_STRUCT_PARAMETER(SOURCE_STRUCT, DESTINATION_STRUCT, PARAMETER)\
     ((DESTINATION_STRUCT).PARAMETER = (SOURCE_STRUCT).PARAMETER)
@@ -90,6 +95,13 @@ typedef enum ParameterChange_t
     PARAMETER_CHANGE_FRACTIONAL_SCALING,
     PARAMETER_CHANGE_COUNT
 } ParameterChange_t;
+
+
+typedef enum FractionalScalingRange_t
+{
+//TODO: notes.
+    FRACTIONAL_SCALING_COUNT = 40
+} FractionalScalingRange_t;
 
 /* struct */
 typedef struct OperatorParameters_t
@@ -210,6 +222,39 @@ typedef struct PackedVoiceParameters_t
     char    voice_name[VOICE_NAME_SIZE];          //ASCII
 } PackedVoiceParameters_t;
 
+typedef struct SupplementVoiceParameters_t
+{
+    //TODO: DEFINE.
+} SupplementVoiceParameters_t;
+
+typedef struct PackedSupplementVoiceParameters_t
+{
+    //TODO: DEFINE.
+} PackedSupplementVoiceParameters_t;
+
+//TODO: DEFINE.
+typedef struct PerformanceParameters_t
+{
+} PerformanceParameters_t;
+
+//TODO: DEFINE.
+struct SystemSetup_t;
+
+typedef TwoByte_t MicroTuningParameter_t;
+
+
+
+typedef TwoByte_t FractionalScalingOffset_t;
+typedef TwoByte_t FractionalScalingParameter_t;
+
+typedef struct FractionalScalingOperatorParameters_t
+{
+    FractionalScalingOffset_t offset;
+    FractionalScalingParameter_t level[FRACTIONAL_SCALING_COUNT];
+} FractionalScalingOperatorParameters_t;
+
+
+
 typedef struct SysexHeader_t
 {
     uint8_t id;
@@ -236,8 +281,49 @@ typedef union ParameterChangeData_t
     uint8_t fractional_scaling[4];
 } ParameterChangeData_t;
 
+
 /* table */
 typedef PackedVoiceParameters_t Packed32Voice_t[VOICE_COUNT];
+typedef PackedSupplementVoiceParameters_t Packed32SupplementVoice_t[VOICE_COUNT];
+typedef PerformanceParameters_t Packed32Performance_t[PERFORMANCE_COUNT];
+typedef MicroTuningParameter_t MicroTuningParameters_t[MIDI_NOTE_COUNT];
+typedef MicroTuningParameters_t MicroTuningCartridge_t[MICRO_TUNING_CARTRIDGE_COUNT];
+typedef FractionalScalingOperatorParameters_t FractionalScalingParameters_t[OPERATOR_COUNT];
+typedef FractionalScalingParameters_t FractionalScalingCartridge_t[FRACTIONAL_SCALING_CARTRIDGE_COUNT];
+
+/* complex type*/
+typedef struct UniversalBulkDataPayload_t
+{
+    UniversalBulkData_t type;
+    union
+    {
+
+    };
+} UniversalBulkDataPayload_t;
+
+typedef struct BulkDataPayload_t
+{
+    BulkData_t type;
+    union
+    {
+        VoiceParameters_t*           voice_parameters_p;
+        SupplementVoiceParameters_t* supplement_voice_parameters_p;
+        Packed32Voice_t*             packed32_voice_p;
+        Packed32SupplementVoice_t*   packed32_supplement_voice_p;
+        UniversalBulkDataPayload_t   universal;
+    };
+} BulkDataPayload_t;
+
+
+typedef struct SysExData_t
+{
+    SysexType_t type;
+    union
+    {
+        ParameterChangeData_t parameter_change;
+        BulkDataPayload_t     bulk_data;
+    };
+} SysExData_t;
 
 /* string */
 extern const char* const SYSEX_TYPE_NAME_TABLE[SYSEX_TYPE_COUNT];
@@ -258,6 +344,16 @@ extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
 
 /* function */
 void process_sysex_data(const void* data_p);
+
+uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p);
+
+/**
+ * wraps a bulk data payload with two byte byte count and checksum.
+ * returns pointer to the wrapped data.
+ */
+uint8_t* format_dx7_bulk_payload(const void* data_p,
+                                 size_t data_length,
+                                 size_t* format_length_p);
 SysexType_t get_header_info(const SysexHeader_t* header_p);
 BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p);
 

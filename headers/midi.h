@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define MIDI_DATA_MASK 0x7F
+#define MIDI_DATA_BITS    7
+
 typedef enum MIDIStatus_t
 {
     MIDI_NOTE_OFF        = 0x80,
@@ -47,7 +50,27 @@ typedef enum MIDISysExID_t
     MIDI_ID_REAL_TIME      = 0x7F
 } MIDISysExID_t;
 
-uint8_t* get_sysex_payload(FILE* file, int* size_p);
+//TODO: MIDI NOTES
+typedef enum MIDINote_t
+{
+    MIDI_NOTE_COUNT = 128
+} MIDINote_t;
 
+
+/**
+ * returns contents between the MIDI SysEx start and EOX bytes (excluded).
+ * @param file_p: the input stream.
+ * @param size_p: if SysEx: the length of the payload,
+ *                if file not over: 0,
+ *                if end of file: EOF.
+ */
+uint8_t* get_sysex_payload(FILE* file_p, int* size_p);
+
+/**
+ * returns number of byt written
+ */
+int write_sysex_payload(FILE* file_p,
+                        const uint8_t* payload,
+                        size_t payload_length);
 
 #endif /* HEADERS_MIDI_H_ */

@@ -11,6 +11,7 @@
 
 #include "utility.h"
 #include "help.h"
+#include "midi.h"
 
 const char* option_handler(int argc, char* argv[])
 {
@@ -24,10 +25,10 @@ const char* option_handler(int argc, char* argv[])
         {
             case 'f':
                 file_name_p = optarg;
-                break;
+            break;
             case 'h':
                 printf("%s", get_help());
-                break;
+            break;
             case 'u':
                 if(!flag_b)
                 {
@@ -35,15 +36,26 @@ const char* option_handler(int argc, char* argv[])
                     folder_name_p = malloc(strlen(optarg) + 1);
                     strcpy(folder_name_p, optarg);
                 }
+                else
+                {
+                    printf("can't have more than one file to unpack\n");
+                }
                 flag_b = 1;
-                break;
+            break;
             case ':':
                 printf("error %c\n", optopt);
-                if(!flag_b)
+                if(optopt == 'u')
                 {
-                    folder_name_p = "output";
+                    if(!flag_b)
+                    {
+                        folder_name_p = "output";
+                    }
+                    else
+                    {
+                        printf("ignoring useless command\n");
+                    }
                 }
-                break;
+            break;
             default:
             break;
         }
@@ -58,10 +70,10 @@ const char* option_handler(int argc, char* argv[])
 }
 
 
-int get_checksum(void* buffer, size_t buffer_size)
+int get_checksum(const void* buffer, size_t buffer_size)
 {
     uint32_t checksum = 0;
-    uint8_t* byte_p = buffer;
+    const uint8_t* byte_p = buffer;
     size_t position = 0;
     for(position = 0; position < buffer_size; ++position)
     {
@@ -71,14 +83,21 @@ int get_checksum(void* buffer, size_t buffer_size)
     return checksum;
 }
 
-uint8_t generate_checksum(void *buffer, size_t buffze_size)
+uint8_t generate_checksum(const void *buffer, size_t buffze_size)
 {
     uint8_t checksum = get_checksum(buffer, buffze_size);
     return 0x7F & ~checksum;
 }
 
-uint16_t get_payload_size(ByteCount_t byte_count)
+uint16_t get_payload_size(TwoByte_t byte_count)
 {
     return ((uint16_t) byte_count.msb << 7) + (uint16_t) byte_count.lsb;
 }
 
+TwoByte_t format_payload_size(size_t size)
+{
+    TwoByte_t byte_count = {0, 0};
+    byte_count.lsb = size & MIDI_DATA_MASK;
+    byte_count.msb = size >> MIDI_DATA_BITS;
+    return byte_count;
+}

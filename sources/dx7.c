@@ -106,9 +106,8 @@ void process_sysex_data(const void* data_p)
         {
             const ParameterChangeHeader_t* parameter_header_p = data_p;
             data_p += sizeof(ParameterChangeHeader_t);
-            printf("\
-Parameter group:   %01hhu%01hhu\n\
-Parameter number: %3hhu\n",
+            printf("Parameter group:   %01hhu%01hhu\n"
+                   "Parameter number: %3hhu\n",
                    parameter_header_p->group_h,
                    parameter_header_p->group_l,
                    parameter_header_p->parameter);
@@ -133,8 +132,8 @@ Parameter number: %3hhu\n",
 
     if((type == SYSEX_TYPE_BULK) && (bulk_type != BULK_DATA_UNIVERSAL_BULK_DUMP))
     {
-        const ByteCount_t* byte_count_p = data_p;
-        data_p += sizeof(ByteCount_t);
+        const TwoByte_t* byte_count_p = data_p;
+        data_p += sizeof(TwoByte_t);
         uint16_t payload_size = get_payload_size(*byte_count_p);
         printf("Payload size:   %huB\n",payload_size);
 
@@ -171,6 +170,25 @@ Parameter number: %3hhu\n",
         printf("checksum: %3d + %3d = %3d\n", checksum, byte, checksum + byte);
     }
 
+}
+
+uint8_t* format_dx7_bulk_payload(const void* data_p,
+                                 size_t data_length,
+                                 size_t* format_length_p)
+{
+    size_t format_length = sizeof(TwoByte_t) + data_length + sizeof(uint8_t);
+    uint8_t* wrapped_data_p = malloc(format_length);
+    if(wrapped_data_p)
+    {
+        *(TwoByte_t*) wrapped_data_p = format_payload_size(data_length);
+        memcpy(wrapped_data_p + sizeof(TwoByte_t), data_p, data_length);
+        *(wrapped_data_p + sizeof(TwoByte_t) + data_length) = generate_checksum(data_p, data_length);
+        if(format_length_p)
+        {
+            *format_length_p = format_length;
+        }
+    }
+    return wrapped_data_p;
 }
 
 SysexType_t get_header_info(const SysexHeader_t* header_p)
