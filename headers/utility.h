@@ -1,7 +1,5 @@
 #include <stdlib.h>
 
-#include "dx7.h"
-
 #ifndef UTILITY_H
 #define UTILITY_H
 

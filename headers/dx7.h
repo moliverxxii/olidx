@@ -238,7 +238,10 @@ typedef struct PerformanceParameters_t
 } PerformanceParameters_t;
 
 //TODO: DEFINE.
-struct SystemSetup_t;
+typedef struct SystemSetup_t
+{
+
+} SystemSetup_t;
 
 typedef TwoByte_t MicroTuningParameter_t;
 typedef TwoByte_t FractionalScalingOffset_t;
@@ -291,7 +294,16 @@ typedef struct UniversalBulkDataPayload_t
     UniversalBulkData_t type;
     union
     {
-
+        PerformanceParameters_t*       performance_parameters_p;        //PERFORMANCE_EDIT_BUFFER
+        Packed32Performance_t*         packed32_performance_p;          //PACKED_32_PERFORMANCE
+        SystemSetup_t*                 system_setup_p;                  //SYSTEM_SET_UP
+        //MICRO_TUNING_EDIT_BUFFER
+        //MICRO_TUNING_MEMORY_0
+        //MICRO_TUNING_MEMORY_1
+        MicroTuningParameters_t*       micro_tuning_edit_parameters_p;
+        MicroTuningCartridge_t*        micro_tuning_cartridge_p;        //MICRO_TUNING_CARTRIDGE
+        FractionalScalingParameters_t* fractional_scaling_parameters_p; //FRACTIONAL_SCALING_EDIT_BUFFER
+        FractionalScalingCartridge_t*  fractional_scaling_cartridge_p;  //FRACTIONAL_SCALING_CARTRIDGE
     };
 } UniversalBulkDataPayload_t;
 
@@ -300,10 +312,10 @@ typedef struct BulkDataPayload_t
     BulkData_t type;
     union
     {
-        VoiceParameters_t*           voice_parameters_p;
-        SupplementVoiceParameters_t* supplement_voice_parameters_p;
-        Packed32Voice_t*             packed32_voice_p;
-        Packed32SupplementVoice_t*   packed32_supplement_voice_p;
+        VoiceParameters_t*           voice_parameters_p;            //VOICE_EDIT_BUFFER
+        SupplementVoiceParameters_t* supplement_voice_parameters_p; //SUPPLEMENT_EDIT_BUFFER
+        Packed32Voice_t*             packed32_voice_p;              //PACKED_32_SUPPLEMENT
+        Packed32SupplementVoice_t*   packed32_supplement_voice_p;   //PACKED_32_VOICE
         UniversalBulkDataPayload_t   universal;
     };
 } BulkDataPayload_t;
@@ -339,6 +351,9 @@ extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
 /* function */
 void process_sysex_data(const void* data_p);
 
+/**
+ *
+ */
 uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p);
 
 /**

@@ -8,6 +8,7 @@
 #ifndef HEADERS_MIDI_H_
 #define HEADERS_MIDI_H_
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -207,9 +208,10 @@ typedef enum MIDINote_t
 #define NOTE_NUMBER(MIDI_NOTE)\
     (MIDI_NOTE%NOTE_COUNT)
 
-//TODO: check that crap.
+//TODO: check that crap. haha!
 #define NOTE_OCTAVE(MIDI_NOTE)\
     ((MIDI_NOTE - MIDI_NOTE%NOTE_COUNT - MIDI_NOTE_C__O)/NOTE_COUNT)
+
 /**
  * returns contents between the MIDI SysEx start and EOX bytes (excluded).
  * @param file_p: the input stream.

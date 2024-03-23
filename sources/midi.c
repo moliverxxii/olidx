@@ -6,8 +6,6 @@
  */
 
 #include "midi.h"
-#include "dx7.h"
-#include "utility.h"
 
 uint8_t* get_sysex_payload(FILE* file_p, int* size_p)
 {

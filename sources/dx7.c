@@ -172,6 +172,12 @@ void process_sysex_data(const void* data_p)
 
 }
 
+uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p)
+{
+    return NULL;
+}
+
+
 uint8_t* format_dx7_bulk_payload(const void* data_p,
                                  size_t data_length,
                                  size_t* format_length_p)
