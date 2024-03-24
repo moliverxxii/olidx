@@ -19,6 +19,9 @@
 #define PERFORMANCE_COUNT                  32
 #define MICRO_TUNING_CARTRIDGE_COUNT       64
 #define FRACTIONAL_SCALING_CARTRIDGE_COUNT 64
+#define UNIVERSAL_BULK_DATA_CLASSIFICATION_SIZE 4U
+#define UNIVERSAL_BULK_DATA_FORMAT_SIZE         6U
+
 
 #define CONVERT_STRUCT_PARAMETER(SOURCE_STRUCT, DESTINATION_STRUCT, PARAMETER)\
     ((DESTINATION_STRUCT).PARAMETER = (SOURCE_STRUCT).PARAMETER)
@@ -79,11 +82,32 @@ typedef enum UniversalBulkData_t
 
 typedef enum BulkDataByteCount_t
 {
-    BYTE_COUNT_VOICE_EDIT_BUFFER      = 155,
-    BYTE_COUNT_SUPPLEMENT_EDIT_BUFFER = 49,
+    BYTE_COUNT_VOICE_EDIT_BUFFER      =  155,
+    BYTE_COUNT_SUPPLEMENT_EDIT_BUFFER =   49,
     BYTE_COUNT_PACKED_32_SUPPLEMENT   = 1120,
     BYTE_COUNT_PACKED_32_VOICE        = 4096
 } BulkDataByteCount_t;
+
+typedef enum UniversalBulkDataByteCount_t
+{
+    BYTE_COUNT_PERFORMANCE_EDIT_BUFFER =   61,
+    BYTE_COUNT_PACKED_32_PERFORMANCE   = 1642,
+    BYTE_COUNT_SYSTEM_SET_UP           =  112,
+    BYTE_COUNT_MICRO_TUNING            =  266,
+    BYTE_COUNT_FRACTIONAL_SCALING      =  502,
+} UniversalBulkDataByteCount_t;
+
+typedef enum UniversalBulkDataRepeat_t
+{
+    REPEAT_PERFORMANCE_EDIT_BUFFER        =  1,
+    REPEAT_PACKED_32_PERFORMANCE          =  1,
+    REPEAT_SYSTEM_SET_UP                  =  1,
+    REPEAT_MICRO_TUNING                   =  1,
+    REPEAT_MICRO_TUNING_CARTRIDGE         = 64,
+    REPEAT_FRACTIONAL_SCALING_EDIT_BUFFER =  1,
+    REPEAT_FRACTIONAL_SCALING_CARTRIDGE   = 32,
+} UniversalBulkDataRepeat_t;
+
 
 typedef enum ParameterChange_t
 {
@@ -272,6 +296,16 @@ typedef struct BulkDataHeader_t
     uint8_t format;
 } BulkDataHeader_t;
 
+
+typedef char UniversalBulkDataClassificationName_t[UNIVERSAL_BULK_DATA_CLASSIFICATION_SIZE];
+typedef char UniversalBulkDataFormatName_t[UNIVERSAL_BULK_DATA_FORMAT_SIZE];
+
+typedef struct UniversalBulkDataHeader_t
+{
+    UniversalBulkDataClassificationName_t classification;
+    UniversalBulkDataFormatName_t         format;
+} UniversalBulkDataHeader_t;
+
 typedef union ParameterChangeData_t
 {
     uint8_t data_1B;
@@ -331,6 +365,7 @@ typedef struct SysExData_t
     };
 } SysExData_t;
 
+
 /* string */
 extern const char* const SYSEX_TYPE_NAME_TABLE[SYSEX_TYPE_COUNT];
 extern const char* const BULK_DATA_FORMAT_NAME_TABLE[BULK_DATA_FORMAT_COUNT];
@@ -340,8 +375,6 @@ extern const char* const UNIVERSAL_BULK_DATA_NAME_TABLE[UNIVERSAL_BULK_DATA_COUN
 
 /* constant */
 extern const uint8_t BULK_DATA_FORMAT_TABLE[BULK_DATA_FORMAT_COUNT];
-extern const size_t UNIVERSAL_BULK_DATA_CLASSIFICATION_SIZE;
-extern const size_t UNIVERSAL_BULK_DATA_FORMAT_SIZE;
 
 /* initialisers */
 extern const SysexHeader_t SYSEX_HEADER_INITIALISER;
@@ -363,6 +396,9 @@ uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p);
 uint8_t* format_dx7_bulk_payload(const void* data_p,
                                  size_t data_length,
                                  size_t* format_length_p);
+uint8_t* format_dx7_universal_bulk_payload(const void* data_p,
+                                           size_t data_length_p,
+                                           size_t* format_length_p);
 SysexType_t get_header_info(const SysexHeader_t* header_p);
 BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p);
 

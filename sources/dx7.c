@@ -12,7 +12,6 @@
 #include "utility.h"
 
 
-
 const char* const SYSEX_TYPE_NAME_TABLE[SYSEX_TYPE_COUNT] =
 {
     "Bulk data",
@@ -67,8 +66,6 @@ const uint8_t BULK_DATA_FORMAT_TABLE[BULK_DATA_FORMAT_COUNT] =
     BULK_DATA_FORMAT_UNIVERSAL_BULK_DUMP
 };
 
-const size_t UNIVERSAL_BULK_DATA_CLASSIFICATION_SIZE = 4U;
-const size_t UNIVERSAL_BULK_DATA_FORMAT_SIZE         = 6U;
 
 const SysexHeader_t SYSEX_HEADER_INITIALISER =
 {
@@ -88,6 +85,13 @@ const BulkDataHeader_t BULK_HEADER_INITIALISER =
 {
     0
 };
+
+const UniversalBulkDataHeader_t UNIVERSAL_BULK_HEADER_INITIALISER =
+{
+    {0},
+    {0}
+};
+
 
 void process_sysex_data(const void* data_p)
 {
@@ -174,6 +178,7 @@ void process_sysex_data(const void* data_p)
 
 uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p)
 {
+//    malloc();
     return NULL;
 }
 
@@ -196,6 +201,14 @@ uint8_t* format_dx7_bulk_payload(const void* data_p,
     }
     return wrapped_data_p;
 }
+
+uint8_t* format_dx7_universal_bulk_payload(const void* data_p,
+                                           size_t data_length_p,
+                                           size_t* format_length_p)
+{
+    return NULL;
+}
+
 
 SysexType_t get_header_info(const SysexHeader_t* header_p)
 {

@@ -7,7 +7,7 @@
 /**
  * Most Significant Byte first!
  */
-typedef struct ByteCount_t
+typedef struct TwoByte_t
 {
     uint8_t msb;
     uint8_t lsb;
