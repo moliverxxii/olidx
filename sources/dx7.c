@@ -66,6 +66,41 @@ const uint8_t BULK_DATA_FORMAT_TABLE[BULK_DATA_FORMAT_COUNT] =
     BULK_DATA_FORMAT_UNIVERSAL_BULK_DUMP
 };
 
+const size_t BULK_DATA_BYTE_COUNT_TABLE[BULK_DATA_FORMAT_COUNT] =
+{
+    BYTE_COUNT_VOICE_EDIT_BUFFER,
+    BYTE_COUNT_SUPPLEMENT_EDIT_BUFFER,
+    BYTE_COUNT_PACKED_32_SUPPLEMENT,
+    BYTE_COUNT_PACKED_32_VOICE,
+    0
+};
+
+const size_t UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[UNIVERSAL_BULK_DATA_COUNT] =
+{
+    BYTE_COUNT_PERFORMANCE_EDIT_BUFFER,
+    BYTE_COUNT_PACKED_32_PERFORMANCE,
+    BYTE_COUNT_SYSTEM_SET_UP,
+    BYTE_COUNT_MICRO_TUNING,
+    BYTE_COUNT_MICRO_TUNING,
+    BYTE_COUNT_MICRO_TUNING,
+    BYTE_COUNT_MICRO_TUNING,
+    BYTE_COUNT_FRACTIONAL_SCALING,
+    BYTE_COUNT_FRACTIONAL_SCALING
+};
+
+const size_t UNIVERSAL_BULK_DATA_REPEAT_TABLE[UNIVERSAL_BULK_DATA_COUNT] =
+{
+    REPEAT_PERFORMANCE_EDIT_BUFFER,
+    REPEAT_PACKED_32_PERFORMANCE,
+    REPEAT_SYSTEM_SET_UP,
+    REPEAT_MICRO_TUNING,
+    REPEAT_MICRO_TUNING,
+    REPEAT_MICRO_TUNING,
+    REPEAT_MICRO_TUNING_CARTRIDGE,
+    REPEAT_FRACTIONAL_SCALING_EDIT_BUFFER,
+    REPEAT_FRACTIONAL_SCALING_CARTRIDGE
+};
+
 
 const SysexHeader_t SYSEX_HEADER_INITIALISER =
 {
@@ -74,6 +109,12 @@ const SysexHeader_t SYSEX_HEADER_INITIALISER =
     0
 };
 
+const SysexHeader_t SYSEX_HEADER_INITIALISER_YAMAHA =
+{
+    0x43,
+    0,
+    0
+};
 const ParameterChangeHeader_t PARAMETER_HEADER_INITIALISER =
 {
     0,
@@ -176,9 +217,30 @@ void process_sysex_data(const void* data_p)
 
 }
 
-uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p)
+uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id)
 {
-//    malloc();
+    if(sysex_data_p == NULL)
+    {
+        return NULL;
+    }
+    SysexHeader_t header = SYSEX_HEADER_INITIALISER_YAMAHA;
+    header.device = device_id;
+
+    BulkDataHeader_t bulk_header;
+    ParameterChangeHeader_t parameter_header;
+    switch(sysex_data_p->type)
+    {
+        case SYSEX_TYPE_BULK:
+            header.substatus = 0;
+            bulk_header.format = BULK_DATA_FORMAT_TABLE[sysex_data_p->bulk_data.type];
+        break;
+        case SYSEX_TYPE_PARAMETER:
+            //TODO: parameters.
+            header.substatus = 1;
+        break;
+        default:
+        break;
+    }
     return NULL;
 }
 

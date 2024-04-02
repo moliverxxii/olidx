@@ -83,7 +83,7 @@ int get_checksum(const void* buffer, size_t buffer_size)
     return checksum;
 }
 
-uint8_t generate_checksum(const void *buffer, size_t buffze_size)
+uint8_t generate_checksum(const void* buffer, size_t buffze_size)
 {
     uint8_t checksum = get_checksum(buffer, buffze_size);
     return 0x7F & ~checksum;

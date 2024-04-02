@@ -375,9 +375,13 @@ extern const char* const UNIVERSAL_BULK_DATA_NAME_TABLE[UNIVERSAL_BULK_DATA_COUN
 
 /* constant */
 extern const uint8_t BULK_DATA_FORMAT_TABLE[BULK_DATA_FORMAT_COUNT];
+extern const size_t BULK_DATA_BYTE_COUNT_TABLE[BULK_DATA_FORMAT_COUNT];
+extern const size_t UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[UNIVERSAL_BULK_DATA_COUNT];
+extern const size_t UNIVERSAL_BULK_DATA_REPEAT_TABLE[UNIVERSAL_BULK_DATA_COUNT];
 
 /* initialisers */
 extern const SysexHeader_t SYSEX_HEADER_INITIALISER;
+extern const SysexHeader_t SYSEX_HEADER_INITIALISER_YAMAHA;
 extern const ParameterChangeHeader_t PARAMETER_HEADER_INITIALISER;
 extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
 
@@ -385,9 +389,9 @@ extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
 void process_sysex_data(const void* data_p);
 
 /**
- *
+ * formats dx7 SysEx payload and return pointer to the payload.
  */
-uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p);
+uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id);
 
 /**
  * wraps a bulk data payload with two byte byte count and checksum.
