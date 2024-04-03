@@ -228,26 +228,121 @@ uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uin
 
     BulkDataHeader_t bulk_header;
     ParameterChangeHeader_t parameter_header;
+
+    void* header_data_p = NULL;
+    size_t header_data_length = 0;
+    void* payload_p = NULL;
+    size_t payload_length = 0;
+
     switch(sysex_data_p->type)
     {
         case SYSEX_TYPE_BULK:
+            header_data_p = &bulk_header;
+            header_data_length = sizeof(BulkDataHeader_t);
             header.substatus = 0;
             bulk_header.format = BULK_DATA_FORMAT_TABLE[sysex_data_p->bulk_data.type];
-        break;
+            payload_p = format_dx7_bulk_payload(&sysex_data_p->bulk_data, &payload_length);
+            break;
         case SYSEX_TYPE_PARAMETER:
+            header_data_p = &parameter_header;
+            header_data_length = sizeof(ParameterChangeHeader_t);
             //TODO: parameters.
             header.substatus = 1;
         break;
         default:
         break;
     }
-    return NULL;
+    size_t sysex_message_length = sizeof(SysexHeader_t)
+                                + header_data_length
+                                + payload_length;
+    uint8_t* sysex_message_p = malloc(sysex_message_length);
+
+    *(SysexHeader_t*) sysex_message_p = header;
+    memcpy(sysex_message_p + sizeof(SysexHeader_t),
+           header_data_p,
+           header_data_length);
+    memcpy(sysex_message_p + sizeof(SysexHeader_t) + header_data_length,
+           payload_p,
+           payload_length);
+    free(payload_p);
+    if(length_p != NULL)
+    {
+        *length_p = sysex_message_length;
+    }
+    return sysex_message_p;
 }
 
+uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
+                                 size_t* length_p)
+{
+    void* payload_p = NULL;
+    if(bulk_data_p->type != BULK_DATA_UNIVERSAL_BULK_DUMP)
+    {
+        payload_p = wrap_dx7_bulk_payload(bulk_data_p->payload_p,
+                                          BULK_DATA_BYTE_COUNT_TABLE[bulk_data_p->type],
+                                          length_p);
+    }
+    else
+    {
+        payload_p = format_dx7_universal_bulk_payload(&bulk_data_p->universal,
+                                                      length_p);
+    }
 
-uint8_t* format_dx7_bulk_payload(const void* data_p,
-                                 size_t data_length,
-                                 size_t* format_length_p)
+    return payload_p;
+}
+
+uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
+                                           size_t* data_length_p)
+{
+    uint8_t* payload_p = NULL;
+    size_t payload_length = 0;
+    int repeat;
+    uint8_t** block_payload_pp = malloc(UNIVERSAL_BULK_DATA_REPEAT_TABLE[data_p->type] * sizeof(uint8_t*));
+    int repeat_count = UNIVERSAL_BULK_DATA_REPEAT_TABLE[data_p->type];
+    for(repeat = 0;
+        repeat < repeat_count;
+        ++repeat)
+    {
+        UniversalBulkDataHeader_t universal_bulk_header;
+        strncpy(universal_bulk_header.classification,
+                UNIVERSAL_BULK_DATA_CLASSIFICATION_NAME,
+                UNIVERSAL_BULK_DATA_CLASSIFICATION_SIZE);
+        strncpy(universal_bulk_header.format,
+                UNIVERSAL_BULK_DATA_FORMAT_TABLE[data_p->type],
+                UNIVERSAL_BULK_DATA_FORMAT_SIZE);
+        size_t format_length = UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[data_p->type] + sizeof(UniversalBulkDataHeader_t);
+        uint8_t* block_payload_p = malloc(format_length);
+        memcpy(block_payload_p,
+               &universal_bulk_header,
+               sizeof(UniversalBulkDataHeader_t));
+        const void* block_p = (repeat_count > 1)
+                             ? * (void**) data_p->payload_p + repeat * UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[data_p->type]
+                             : data_p->payload_p;
+        memcpy(block_payload_p, block_p, UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[data_p->type]);
+        size_t length = 0;
+        block_payload_pp[repeat] = wrap_dx7_bulk_payload(block_payload_p,
+                                                         format_length,
+                                                         &length);
+        payload_length += length;
+        free(block_payload_p);
+    }
+    payload_p = malloc(payload_length);
+    size_t block_length = payload_length/repeat_count;
+    uint8_t* head_p;
+    for(repeat = 0, head_p = payload_p;
+        repeat < repeat_count;
+        repeat++, head_p += block_length)
+    {
+        memcpy(head_p, block_payload_pp[repeat], block_length);
+        free(block_payload_pp[repeat]);
+    }
+    free(block_payload_pp);
+    return payload_p;
+}
+
+uint8_t* wrap_dx7_bulk_payload(const void* data_p,
+                               size_t data_length,
+                               size_t* format_length_p)
 {
     size_t format_length = sizeof(TwoByte_t) + data_length + sizeof(uint8_t);
     uint8_t* wrapped_data_p = malloc(format_length);
@@ -263,14 +358,6 @@ uint8_t* format_dx7_bulk_payload(const void* data_p,
     }
     return wrapped_data_p;
 }
-
-uint8_t* format_dx7_universal_bulk_payload(const void* data_p,
-                                           size_t data_length_p,
-                                           size_t* format_length_p)
-{
-    return NULL;
-}
-
 
 SysexType_t get_header_info(const SysexHeader_t* header_p)
 {

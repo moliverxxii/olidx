@@ -328,6 +328,7 @@ typedef struct UniversalBulkDataPayload_t
     UniversalBulkData_t type;
     union
     {
+        void*                          payload_p;
         PerformanceParameters_t*       performance_parameters_p;        //PERFORMANCE_EDIT_BUFFER
         Packed32Performance_t*         packed32_performance_p;          //PACKED_32_PERFORMANCE
         SystemSetup_t*                 system_setup_p;                  //SYSTEM_SET_UP
@@ -346,6 +347,7 @@ typedef struct BulkDataPayload_t
     BulkData_t type;
     union
     {
+        void*                        payload_p;
         VoiceParameters_t*           voice_parameters_p;            //VOICE_EDIT_BUFFER
         SupplementVoiceParameters_t* supplement_voice_parameters_p; //SUPPLEMENT_EDIT_BUFFER
         Packed32Voice_t*             packed32_voice_p;              //PACKED_32_SUPPLEMENT
@@ -393,16 +395,17 @@ void process_sysex_data(const void* data_p);
  */
 uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id);
 
+uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
+                                 size_t* length_p);
 /**
  * wraps a bulk data payload with two byte byte count and checksum.
  * returns pointer to the wrapped data.
  */
-uint8_t* format_dx7_bulk_payload(const void* data_p,
-                                 size_t data_length,
-                                 size_t* format_length_p);
-uint8_t* format_dx7_universal_bulk_payload(const void* data_p,
-                                           size_t data_length_p,
-                                           size_t* format_length_p);
+uint8_t* wrap_dx7_bulk_payload(const void* data_p,
+                               size_t data_length,
+                               size_t* format_length_p);
+uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
+                                           size_t* data_length_p);
 SysexType_t get_header_info(const SysexHeader_t* header_p);
 BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p);
 
