@@ -31,7 +31,7 @@ clean:
 	rm -fr $(OBJECT_DIR) $(DEPENDENCY_DIR) $(PROJECT)
 
 ANALYZER = $(shell /usr/local/bin/brew --prefix llvm)/bin/scan-build
-analysis:
+analysis: clean
 	$(ANALYZER) -v -v -v -o $(PROJECT)-analysis make $(PROJECT)
 
 .PHONY: clean analysis
