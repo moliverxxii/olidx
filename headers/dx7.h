@@ -308,12 +308,6 @@ typedef struct UniversalBulkDataHeader_t
 } UniversalBulkDataHeader_t;
 
 /* unions */
-typedef union ParameterChangeData_t
-{
-    uint8_t data_1B;
-    uint8_t data_3B[3];
-    uint8_t fractional_scaling[4];
-} ParameterChangeData_t;
 
 /* tables */
 typedef PackedVoiceParameters_t Packed32Voice_t[VOICE_COUNT];
@@ -358,14 +352,24 @@ typedef struct BulkDataPayload_t
     };
 } BulkDataPayload_t;
 
+typedef struct ParameterPayload_t
+{
+    ParameterChange_t parameter;
+    union
+    {
+        uint8_t data;
+        uint8_t micro_tuning[3];
+        uint8_t fractional_scaling_data[4];
+    };
+} ParameterPayload_t;
 
 typedef struct SysExData_t
 {
     SysexType_t type;
     union
     {
-        ParameterChangeData_t parameter_change;
-        BulkDataPayload_t     bulk_data;
+        BulkDataPayload_t  bulk_data;
+        ParameterPayload_t parameter_change;
     };
 } SysExData_t;
 
@@ -388,17 +392,25 @@ extern const SysexHeader_t SYSEX_HEADER_INITIALISER;
 extern const SysexHeader_t SYSEX_HEADER_INITIALISER_YAMAHA;
 extern const ParameterChangeHeader_t PARAMETER_HEADER_INITIALISER;
 extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
+extern const UniversalBulkDataHeader_t UNIVERSAL_BULK_HEADER_INITIALISER;
+extern const SysExData_t SYSEX_DATA_INITIALISER;
 
 /* functions */
-void process_sysex_data(const void* data_p);
+void process_sysex_data(const void* data_p,
+                        size_t length,
+                        const ProgramOptions_t* options_p);
 
 /**
  * formats dx7 SysEx payload and return pointer to the payload.
  */
 uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id);
+SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length);
 
 uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                  size_t* length_p);
+
+uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
+                                           size_t* data_length_p);
 /**
  * wraps a bulk data payload with two byte byte count and checksum.
  * returns pointer to the wrapped data.
@@ -406,8 +418,9 @@ uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
 uint8_t* wrap_dx7_bulk_payload(const void* data_p,
                                size_t data_length,
                                size_t* format_length_p);
-uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
-                                           size_t* data_length_p);
+uint8_t* format_dx7_parameter_payload(const ParameterPayload_t* parameter_p,
+                                      size_t* length_p);
+ParameterChangeHeader_t get_parameter_header(const ParameterPayload_t* parameter_p);
 SysexType_t get_header_info(const SysexHeader_t* header_p);
 BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p);
 

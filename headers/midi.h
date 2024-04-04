@@ -219,7 +219,7 @@ typedef enum MIDINote_t
  *                if file not over: 0,
  *                if end of file: EOF.
  */
-uint8_t* get_sysex_payload(FILE* file_p, int* size_p);
+uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p);
 
 /**
  * returns number of byt written

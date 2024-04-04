@@ -7,13 +7,21 @@
 
 #include "midi.h"
 
-uint8_t* get_sysex_payload(FILE* file_p, int* size_p)
+uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p)
 {
     int counter = 0;
-    int byte    = getc(file_p);
-    counter    += (byte != EOF);
-    uint8_t* buffer_p = NULL;
+    int byte;
+    do
+    {
+        byte = getc(file_p);
+        if(byte == EOF)
+        {
+            break;
+        }
+        counter++;
+    } while(byte != MIDI_SYSTEM_EXCLUSIVE);
 
+    uint8_t* buffer_p = NULL;
     if(byte == MIDI_SYSTEM_EXCLUSIVE)
     {
         long int position_start = ftell(file_p);
@@ -60,3 +68,4 @@ int write_sysex_payload(FILE* file_p,
     count += fwrite(&byte, sizeof(uint8_t), 1, file_p);
     return count;
 }
+

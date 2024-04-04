@@ -13,7 +13,7 @@
 #include "help.h"
 #include "midi.h"
 
-const char* option_handler(int argc, char* argv[])
+const char* option_handler(int argc, char* argv[], ProgramOptions_t* options_p)
 {
     int opt;
     int flag_b = 0;
@@ -35,6 +35,10 @@ const char* option_handler(int argc, char* argv[])
                     printf("unpack %s\n", optarg);
                     folder_name_p = malloc(strlen(optarg) + 1);
                     strcpy(folder_name_p, optarg);
+                    if(options_p != NULL)
+                    {
+                        options_p->unpack = 1;
+                    }
                 }
                 else
                 {

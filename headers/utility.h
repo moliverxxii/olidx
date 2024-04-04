@@ -14,8 +14,11 @@ typedef struct TwoByte_t
     uint8_t lsb;
 } TwoByte_t;
 
-
-const char* option_handler(int argc, char* argv[]);
+typedef struct ProgramOptions_t
+{
+    int unpack;
+} ProgramOptions_t;
+const char* option_handler(int argc, char* argv[], ProgramOptions_t* options_p);
 
 int get_checksum(const void* buffer, size_t buffer_size);
 uint8_t generate_checksum(const void* buffer, size_t buffze_size);

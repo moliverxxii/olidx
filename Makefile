@@ -32,6 +32,6 @@ clean:
 
 ANALYZER = $(shell /usr/local/bin/brew --prefix llvm)/bin/scan-build
 analysis: clean
-	$(ANALYZER) -v -v -v -o $(PROJECT)-analysis make $(PROJECT)
+	$(ANALYZER) -v -o $(PROJECT)-analysis make $(PROJECT)
 
 .PHONY: clean analysis

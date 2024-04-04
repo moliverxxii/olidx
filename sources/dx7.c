@@ -127,97 +127,43 @@ const BulkDataHeader_t BULK_HEADER_INITIALISER =
     0
 };
 
+
+
 const UniversalBulkDataHeader_t UNIVERSAL_BULK_HEADER_INITIALISER =
 {
     {0},
     {0}
 };
 
-
-void process_sysex_data(const void* data_p)
+const SysExData_t SYSEX_DATA_INITIALISER =
 {
-    const SysexHeader_t* sysex_header_p = data_p;
-    data_p += sizeof(SysexHeader_t);
-    SysexType_t type = get_header_info(sysex_header_p);
-
-    printf("Sysex type: %s\n", SYSEX_TYPE_NAME_TABLE[type]);
-
-    BulkData_t bulk_type = BULK_DATA_MALFORMED;
-
-
-    switch(type)
+    SYSEX_TYPE_BULK,
     {
-        case SYSEX_TYPE_PARAMETER:
-        {
-            const ParameterChangeHeader_t* parameter_header_p = data_p;
-            data_p += sizeof(ParameterChangeHeader_t);
-            printf("Parameter group:   %01hhu%01hhu\n"
-                   "Parameter number: %3hhu\n",
-                   parameter_header_p->group_h,
-                   parameter_header_p->group_l,
-                   parameter_header_p->parameter);
-        }
-        break;
+        {BULK_DATA_MALFORMED, {NULL}}
+    }
+};
+
+void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_t* options_p)
+{
+    SysExData_t* sysex_p = get_dx7_sysex(data_p, length);
+    switch(sysex_p->type)
+    {
         case SYSEX_TYPE_BULK:
-        {
-            const BulkDataHeader_t* bulk_header_p = data_p;
-            data_p += sizeof(BulkDataHeader_t);
-            bulk_type = get_bulk_data_header_info(bulk_header_p);
-            if(bulk_type == BULK_DATA_MALFORMED)
+            if(options_p->unpack && sysex_p->bulk_data.type == BULK_DATA_PACKED_32_VOICE)
             {
-                return;
             }
-        }
+        break;
+        case SYSEX_TYPE_PARAMETER:
         break;
         default:
-            return;
         break;
     }
-
-
-    if((type == SYSEX_TYPE_BULK) && (bulk_type != BULK_DATA_UNIVERSAL_BULK_DUMP))
-    {
-        const TwoByte_t* byte_count_p = data_p;
-        data_p += sizeof(TwoByte_t);
-        uint16_t payload_size = get_payload_size(*byte_count_p);
-        printf("Payload size:   %huB\n",payload_size);
-
-        void* payload_p;
-        Packed32Voice_t voices;
-        if(bulk_type == BULK_DATA_PACKED_32_VOICE)
-        {
-            for(int voice = 0; voice < VOICE_COUNT; voice++)
-            {
-                voices[voice] = *(PackedVoiceParameters_t*) data_p;
-                data_p += sizeof(PackedVoiceParameters_t);
-                printf("%3$2d: %1$.*2$s\n",
-                       voices[voice].voice_name,
-                       VOICE_NAME_SIZE,
-                       1+voice);
-            }
-            payload_p = voices;
-        }
-        else
-        {
-            payload_p = malloc(payload_size);
-            memcpy(payload_p, data_p, payload_size);
-            data_p += payload_size;
-        }
-
-        int checksum = get_checksum(payload_p, payload_size);
-        int byte = *((uint8_t*) data_p);
-        ++data_p;
-
-        if(bulk_type != BULK_DATA_PACKED_32_VOICE)
-        {
-            free(payload_p);
-        }
-        printf("checksum: %3d + %3d = %3d\n", checksum, byte, checksum + byte);
-    }
-
+    free(sysex_p);
 }
 
-uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id)
+uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p,
+                          size_t* length_p,
+                          uint8_t device_id)
 {
     if(sysex_data_p == NULL)
     {
@@ -241,11 +187,16 @@ uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uin
             header_data_length = sizeof(BulkDataHeader_t);
             header.substatus = 0;
             bulk_header.format = BULK_DATA_FORMAT_TABLE[sysex_data_p->bulk_data.type];
-            payload_p = format_dx7_bulk_payload(&sysex_data_p->bulk_data, &payload_length);
+            payload_p = format_dx7_bulk_payload(&sysex_data_p->bulk_data,
+                                                &payload_length);
             break;
         case SYSEX_TYPE_PARAMETER:
+            parameter_header = get_parameter_header(&sysex_data_p->parameter_change);
+            payload_p = format_dx7_parameter_payload(&sysex_data_p->parameter_change,
+                                                     &payload_length);
             header_data_p = &parameter_header;
             header_data_length = sizeof(ParameterChangeHeader_t);
+
             //TODO: parameters.
             header.substatus = 1;
         break;
@@ -271,6 +222,85 @@ uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uin
     }
     return sysex_message_p;
 }
+
+SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
+{
+    const uint8_t* head_p = payload_p;
+    SysexHeader_t header;
+    header = *(SysexHeader_t*) head_p;
+    head_p += sizeof(SysexHeader_t);
+    SysExData_t* data_p = malloc(sizeof(SysExData_t));
+    *data_p = SYSEX_DATA_INITIALISER;
+    data_p->type = get_header_info(&header);
+    printf("Sysex type: %s\n", SYSEX_TYPE_NAME_TABLE[data_p->type]);
+    switch(data_p->type)
+    {
+        case SYSEX_TYPE_PARAMETER:
+        {
+            const ParameterChangeHeader_t* parameter_header_p =
+                    (const ParameterChangeHeader_t*) (head_p);
+            head_p += sizeof(ParameterChangeHeader_t);
+            printf("Parameter group:   %01hhu%01hhu\n"
+                   "Parameter number: %3hhu\n",
+                   parameter_header_p->group_h,
+                   parameter_header_p->group_l,
+                   parameter_header_p->parameter);
+        }
+        break;
+        case SYSEX_TYPE_BULK:
+        {
+            const BulkDataHeader_t* bulk_header_p = (const BulkDataHeader_t*) head_p;
+            head_p += sizeof(BulkDataHeader_t);
+            data_p->bulk_data.type = get_bulk_data_header_info(bulk_header_p);
+        }
+        break;
+        default:
+        break;
+    }
+
+    if((data_p->type == SYSEX_TYPE_BULK) && (data_p->bulk_data.type != BULK_DATA_UNIVERSAL_BULK_DUMP))
+    {
+        const TwoByte_t* byte_count_p = (const TwoByte_t*) (head_p);
+        head_p += sizeof(TwoByte_t);
+        uint16_t payload_size = get_payload_size(*byte_count_p);
+        printf("Payload size:   %huB\n",payload_size);
+
+        void* bulk_payload_p;
+        Packed32Voice_t voices;
+        if(data_p->bulk_data.type == BULK_DATA_PACKED_32_VOICE)
+        {
+            for(int voice = 0; voice < VOICE_COUNT; voice++)
+            {
+                voices[voice] = *(PackedVoiceParameters_t*) head_p;
+                head_p += sizeof(PackedVoiceParameters_t);
+                printf("%3$2d: %1$.*2$s\n",
+                       voices[voice].voice_name,
+                       VOICE_NAME_SIZE,
+                       1+voice);
+            }
+            bulk_payload_p = voices;
+        }
+        else
+        {
+            bulk_payload_p = malloc(payload_size);
+            memcpy(bulk_payload_p, head_p, payload_size);
+            head_p += payload_size;
+        }
+
+        int checksum = get_checksum(bulk_payload_p, payload_size);
+        int byte = *((uint8_t*) head_p);
+        ++head_p;
+
+        if(data_p->bulk_data.type != BULK_DATA_PACKED_32_VOICE)
+        {
+            free(bulk_payload_p);
+        }
+        printf("checksum: %3d + %3d = %3d\n", checksum, byte, checksum + byte);
+    }
+    return data_p;
+
+}
+
 
 uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                  size_t* length_p)
@@ -358,6 +388,24 @@ uint8_t* wrap_dx7_bulk_payload(const void* data_p,
     }
     return wrapped_data_p;
 }
+
+uint8_t* format_dx7_parameter_payload(const ParameterPayload_t* parameter_p,
+                                      size_t* length_p)
+{
+    //TODO: convert.
+    if(length_p != NULL)
+    {
+        *length_p = 0;
+    }
+    return NULL;
+}
+
+ParameterChangeHeader_t get_parameter_header(const ParameterPayload_t* parameter_p)
+{
+    //TODO: convert.
+    return PARAMETER_HEADER_INITIALISER;
+}
+
 
 SysexType_t get_header_info(const SysexHeader_t* header_p)
 {

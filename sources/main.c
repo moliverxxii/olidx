@@ -8,7 +8,8 @@
 
 int main(int argc, char* argv[])
 {
-    const char* file_name = option_handler(argc, argv);
+    ProgramOptions_t options;
+    const char* file_name = option_handler(argc, argv, &options);
     if(file_name)
     {
         printf("file: %s\n", file_name);
@@ -28,12 +29,12 @@ int main(int argc, char* argv[])
 	int sysex_counter = 0;
 	do
 	{
-	    uint8_t* buffer_p = get_sysex_payload(midi_file_p, &size);
+	    uint8_t* buffer_p = get_next_sysex_payload(midi_file_p, &size);
         if(buffer_p)
         {
-            printf("Payload no: %d\n", sysex_counter++);
+            printf("Payload no: %d\n", ++sysex_counter);
             printf("Sysex size: %dB\n", size);
-            process_sysex_data(buffer_p);
+            process_sysex_data(buffer_p, size, &options);
         }
 	    free(buffer_p);
 	    printf("---------\n");
