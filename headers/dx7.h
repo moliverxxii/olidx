@@ -13,7 +13,8 @@
 
 #include "utility.h"
 #include "midi.h"
-/* macro */
+
+/* macros */
 #define VOICE_NAME_SIZE                    10
 #define VOICE_COUNT                        32
 #define PERFORMANCE_COUNT                  32
@@ -26,7 +27,7 @@
 #define CONVERT_STRUCT_PARAMETER(SOURCE_STRUCT, DESTINATION_STRUCT, PARAMETER)\
     ((DESTINATION_STRUCT).PARAMETER = (SOURCE_STRUCT).PARAMETER)
 
-/* enum */
+/* enumerations */
 typedef enum Operator_t
 {
     OPERATOR_1 = 0,
@@ -61,7 +62,7 @@ typedef enum BulkDataFormat_t
     BULK_DATA_FORMAT_VOICE_EDIT_BUFFER      = 0x00,
     BULK_DATA_FORMAT_SUPPLEMENT_EDIT_BUFFER = 0x05,
     BULK_DATA_FORMAT_PACKED_32_SUPPLEMENT   = 0x06,
-    BULK_DATA_FORMAT_PACKED_32_VOICE        = 0X09,
+    BULK_DATA_FORMAT_PACKED_32_VOICE        = 0x09,
     BULK_DATA_FORMAT_UNIVERSAL_BULK_DUMP    = 0x7E
 } BulkDataFormat_t;
 
@@ -127,7 +128,7 @@ typedef enum FractionalScalingRange_t
     FRACTIONAL_SCALING_COUNT = 40
 } FractionalScalingRange_t;
 
-/* struct */
+/* structures */
 typedef struct OperatorParameters_t
 {
     uint8_t eg_rate_1;              //0 - 99
@@ -306,6 +307,7 @@ typedef struct UniversalBulkDataHeader_t
     UniversalBulkDataFormatName_t         format;
 } UniversalBulkDataHeader_t;
 
+/* unions */
 typedef union ParameterChangeData_t
 {
     uint8_t data_1B;
@@ -313,7 +315,7 @@ typedef union ParameterChangeData_t
     uint8_t fractional_scaling[4];
 } ParameterChangeData_t;
 
-/* table */
+/* tables */
 typedef PackedVoiceParameters_t Packed32Voice_t[VOICE_COUNT];
 typedef PackedSupplementVoiceParameters_t Packed32SupplementVoice_t[VOICE_COUNT];
 typedef PerformanceParameters_t Packed32Performance_t[PERFORMANCE_COUNT];
@@ -322,7 +324,7 @@ typedef MicroTuningParameters_t MicroTuningCartridge_t[MICRO_TUNING_CARTRIDGE_CO
 typedef FractionalScalingOperatorParameters_t FractionalScalingParameters_t[OPERATOR_COUNT];
 typedef FractionalScalingParameters_t FractionalScalingCartridge_t[FRACTIONAL_SCALING_CARTRIDGE_COUNT];
 
-/* complex type*/
+/* complex types */
 typedef struct UniversalBulkDataPayload_t
 {
     UniversalBulkData_t type;
@@ -368,14 +370,14 @@ typedef struct SysExData_t
 } SysExData_t;
 
 
-/* string */
+/* strings */
 extern const char* const SYSEX_TYPE_NAME_TABLE[SYSEX_TYPE_COUNT];
 extern const char* const BULK_DATA_FORMAT_NAME_TABLE[BULK_DATA_FORMAT_COUNT];
 extern const char* const UNIVERSAL_BULK_DATA_CLASSIFICATION_NAME;
 extern const char* const UNIVERSAL_BULK_DATA_FORMAT_TABLE[UNIVERSAL_BULK_DATA_COUNT];
 extern const char* const UNIVERSAL_BULK_DATA_NAME_TABLE[UNIVERSAL_BULK_DATA_COUNT];
 
-/* constant */
+/* constants */
 extern const uint8_t BULK_DATA_FORMAT_TABLE[BULK_DATA_FORMAT_COUNT];
 extern const size_t BULK_DATA_BYTE_COUNT_TABLE[BULK_DATA_FORMAT_COUNT];
 extern const size_t UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[UNIVERSAL_BULK_DATA_COUNT];
@@ -387,7 +389,7 @@ extern const SysexHeader_t SYSEX_HEADER_INITIALISER_YAMAHA;
 extern const ParameterChangeHeader_t PARAMETER_HEADER_INITIALISER;
 extern const BulkDataHeader_t BULK_HEADER_INITIALISER;
 
-/* function */
+/* functions */
 void process_sysex_data(const void* data_p);
 
 /**

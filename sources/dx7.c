@@ -315,7 +315,7 @@ uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* dat
         memcpy(block_payload_p,
                &universal_bulk_header,
                sizeof(UniversalBulkDataHeader_t));
-        const void* block_p = (repeat_count > 1)
+        const void* block_p = (repeat_count > 1) //si il y a plusieurs repetitions, nous avons un pointeur vers un tableau.
                              ? * (void**) data_p->payload_p + repeat * UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[data_p->type]
                              : data_p->payload_p;
         memcpy(block_payload_p, block_p, UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[data_p->type]);
