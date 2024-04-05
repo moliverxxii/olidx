@@ -5,6 +5,8 @@
 #define UTILITY_H
 
 #define GET_AMOUNT(BITS) (2 << BITS)
+#define OK(MESSAGE) printf("ok number " #MESSAGE "!\n")
+
 /**
  * Most Significant Byte first!
  */
