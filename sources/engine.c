@@ -139,7 +139,7 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
             if(options_p->unpack && sysex_p->bulk_data.type == BULK_DATA_PACKED_32_VOICE)
             {
 //                VoiceParameters_t parameters = unpack_voice_parameters();
-                break;
+//                break;
             }
         case SYSEX_TYPE_PARAMETER:
         default:
