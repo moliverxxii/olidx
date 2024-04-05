@@ -1,3 +1,4 @@
+!!! EN COURS DE DÉVELOPPEMENT!!!
 Utilitaire de fichiers MIDI System Exclusive (SysEx) pour yamaha DX7 II-D/FD.
 
 Séparer un fichier en plusieurs fichiers:

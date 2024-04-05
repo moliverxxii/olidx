@@ -138,6 +138,7 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
         case SYSEX_TYPE_BULK:
             if(options_p->unpack && sysex_p->bulk_data.type == BULK_DATA_PACKED_32_VOICE)
             {
+                //TODO: déballage complet. et déballage simple
 //                VoiceParameters_t parameters = unpack_voice_parameters();
 //                break;
             }
