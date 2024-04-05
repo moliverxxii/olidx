@@ -396,10 +396,6 @@ extern const UniversalBulkDataHeader_t UNIVERSAL_BULK_HEADER_INITIALISER;
 extern const SysExData_t SYSEX_DATA_INITIALISER;
 
 /* functions */
-void process_sysex_data(const void* data_p,
-                        size_t length,
-                        const ProgramOptions_t* options_p);
-
 /**
  * formats dx7 SysEx payload and return pointer to the payload.
  */

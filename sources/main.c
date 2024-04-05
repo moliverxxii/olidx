@@ -4,7 +4,7 @@
 #include "utility.h"
 #include "dx7.h"
 #include "midi.h"
-
+#include "engine.h"
 
 int main(int argc, char* argv[])
 {
