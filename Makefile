@@ -30,7 +30,7 @@ $(DIRS):
 clean:
 	rm -fr $(OBJECT_DIR) $(DEPENDENCY_DIR) $(PROJECT)
 
-ANALYZER = $(shell /usr/local/bin/brew --prefix llvm)/bin/scan-build
+ANALYZER = scan-build
 analysis: clean
 	$(ANALYZER) -v -o $(PROJECT)-analysis make $(PROJECT)
 
