@@ -15,6 +15,50 @@
 #include "help.h"
 #include "dx7.h"
 
+typedef struct olidx_engine_t
+{
+    int unpack;
+    uint8_t file_number;
+    const char file_root_p;
+} olidx_engine_t;
+
+int run_engine(int argc, char* argv[])
+{
+    ProgramOptions_t options = {0};
+    const char* file_name = option_handler(argc, argv, &options);
+    if(file_name)
+    {
+        printf("file: %s\n", file_name);
+    }
+    else
+    {
+        printf("no file specified: OOST!\n");
+        return EXIT_FAILURE;
+    }
+    FILE* midi_file_p = fopen(file_name, "r");
+    if(!midi_file_p)
+    {
+        printf("can't open file: %s\n", file_name);
+        return EXIT_FAILURE;
+    }
+    int size;
+    int sysex_counter = 0;
+    do
+    {
+        uint8_t* buffer_p = get_next_sysex_payload(midi_file_p, &size);
+        if(buffer_p)
+        {
+            printf("Payload no: %d\n", ++sysex_counter);
+            printf("Sysex size: %dB\n", size);
+            process_sysex_data(buffer_p, size, &options);
+        }
+        free(buffer_p);
+        printf("---------\n");
+    } while(size > 0);
+    printf("fin\n");
+    return EXIT_SUCCESS;
+}
+
 const char* option_handler(int argc, char* argv[], ProgramOptions_t* options_p)
 {
     int opt;
@@ -93,6 +137,15 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
     free(sysex_p);
 }
 
+char* file_name(const char* root_p, uint8_t counter)
+{
+    char* file_name_p = malloc(strlen(root_p) + 4);
+    char suffix[4];
+    strcpy(file_name_p, root_p);
+    sprintf(suffix, "%03hhu", counter);
+    strcat(file_name_p, suffix);
+    return file_name_p;
+}
 
 
 
