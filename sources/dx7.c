@@ -143,24 +143,6 @@ const SysExData_t SYSEX_DATA_INITIALISER =
     }
 };
 
-void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_t* options_p)
-{
-    SysExData_t* sysex_p = get_dx7_sysex(data_p, length);
-    switch(sysex_p->type)
-    {
-        case SYSEX_TYPE_BULK:
-            if(options_p->unpack && sysex_p->bulk_data.type == BULK_DATA_PACKED_32_VOICE)
-            {
-            }
-        break;
-        case SYSEX_TYPE_PARAMETER:
-        break;
-        default:
-        break;
-    }
-    free(sysex_p);
-}
-
 uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p,
                           size_t* length_p,
                           uint8_t device_id)

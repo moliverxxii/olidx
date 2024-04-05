@@ -4,75 +4,8 @@
  *  Created on: 1 mars 2024
  *      Author: moliver
  */
-#include <unistd.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "utility.h"
-#include "help.h"
 #include "midi.h"
-
-const char* option_handler(int argc, char* argv[], ProgramOptions_t* options_p)
-{
-    int opt;
-    int flag_b = 0;
-    char* folder_name_p = NULL;
-    char* file_name_p = NULL;
-    while(-1 != (opt = getopt(argc, argv, ":f:hu:")))
-    {
-        switch(opt)
-        {
-            case 'f':
-                file_name_p = optarg;
-            break;
-            case 'h':
-                printf("%s", get_help());
-            break;
-            case 'u':
-                if(!flag_b)
-                {
-                    printf("unpack %s\n", optarg);
-                    folder_name_p = malloc(strlen(optarg) + 1);
-                    strcpy(folder_name_p, optarg);
-                    if(options_p != NULL)
-                    {
-                        options_p->unpack = 1;
-                    }
-                }
-                else
-                {
-                    printf("can't have more than one file to unpack\n");
-                }
-                flag_b = 1;
-            break;
-            case ':':
-                printf("error %c\n", optopt);
-                if(optopt == 'u')
-                {
-                    if(!flag_b)
-                    {
-                        folder_name_p = "output";
-                    }
-                    else
-                    {
-                        printf("ignoring useless command\n");
-                    }
-                }
-            break;
-            default:
-            break;
-        }
-    }
-    mkdir(folder_name_p, S_IRWXU | S_IRWXG | S_IRWXO);
-    if(flag_b)
-    {
-        free(folder_name_p);
-    }
-
-    return file_name_p;
-}
-
 
 int get_checksum(const void* buffer, size_t buffer_size)
 {
