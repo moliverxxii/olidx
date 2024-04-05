@@ -212,6 +212,8 @@ typedef enum MIDINote_t
 #define NOTE_OCTAVE(MIDI_NOTE)\
     ((MIDI_NOTE - MIDI_NOTE%NOTE_COUNT - MIDI_NOTE_C__O)/NOTE_COUNT)
 
+extern const char* const MIDI_SYSEX_EXTENSION;
+
 /**
  * returns contents between the MIDI SysEx start and EOX bytes (excluded).
  * @param file_p: the input stream.
