@@ -12,13 +12,15 @@ typedef struct ProgramOptions_t
 {
     int unpack;
 } ProgramOptions_t;
+
+int run_engine(int argc, char* argv[]);
 const char* option_handler(int argc, char* argv[], ProgramOptions_t* options_p);
 
 void process_sysex_data(const void* data_p,
                         size_t length,
                         const ProgramOptions_t* options_p);
 
-
+char* file_name(const char* root_p, uint8_t counter);
 
 
 #endif /* HEADERS_ENGINE_H_ */

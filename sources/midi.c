@@ -9,7 +9,6 @@
 
 uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p)
 {
-    int counter = 0;
     int byte;
     do
     {
@@ -18,29 +17,24 @@ uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p)
         {
             break;
         }
-        counter++;
     } while(byte != MIDI_SYSTEM_EXCLUSIVE);
 
     uint8_t* buffer_p = NULL;
+    size_t payload_size = 0;
     if(byte == MIDI_SYSTEM_EXCLUSIVE)
     {
         long int position_start = ftell(file_p);
 
         for(byte = getc(file_p); byte != MIDI_EOX; byte = getc(file_p))
         {
-            if(byte != EOF)
+            if(byte == EOF)
             {
-                ++counter;
-            }
-            else
-            {
-                counter = EOF;
                 break;
             }
         }
 
         long int position_end = ftell(file_p);
-        size_t payload_size = position_end - position_start - 1;
+        payload_size = position_end - position_start - 1;
         buffer_p = malloc(payload_size);
         fseek(file_p, position_start, SEEK_SET);
         fread(buffer_p, sizeof(uint8_t), payload_size, file_p);
@@ -50,7 +44,7 @@ uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p)
 
     if(size_p)
     {
-        *size_p = counter;
+        *size_p = (byte != EOF)? payload_size : EOF;
     }
 
     return buffer_p;
