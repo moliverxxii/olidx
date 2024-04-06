@@ -234,6 +234,7 @@ SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
             const BulkDataHeader_t* bulk_header_p = (const BulkDataHeader_t*) head_p;
             head_p += sizeof(BulkDataHeader_t);
             data_p->bulk_data.type = get_bulk_data_header_info(bulk_header_p);
+
         }
         break;
         default:
@@ -268,6 +269,8 @@ SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
             memcpy(bulk_payload_p, head_p, payload_size);
             head_p += payload_size;
         }
+        data_p->bulk_data.payload_p = malloc(payload_size);
+        memcpy(data_p->bulk_data.payload_p, bulk_payload_p, payload_size);
 
         int checksum = get_checksum(bulk_payload_p, payload_size);
         int byte = *((uint8_t*) head_p);
@@ -288,18 +291,31 @@ uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                  size_t* length_p)
 {
     void* payload_p = NULL;
-    if(bulk_data_p->type != BULK_DATA_UNIVERSAL_BULK_DUMP)
+    const void* data_p = NULL;
+    switch(bulk_data_p->type)
     {
-        payload_p = wrap_dx7_bulk_payload(bulk_data_p->payload_p,
-                                          BULK_DATA_BYTE_COUNT_TABLE[bulk_data_p->type],
-                                          length_p);
-    }
-    else
-    {
+    case BULK_DATA_VOICE_EDIT_BUFFER:
+    case BULK_DATA_SUPPLEMENT_EDIT_BUFFER:
+        data_p = bulk_data_p->payload_p;
+        break;
+    case BULK_DATA_PACKED_32_SUPPLEMENT:
+    case BULK_DATA_PACKED_32_VOICE:
+        data_p = *(void**) bulk_data_p->payload_p;
+        break;
+    case BULK_DATA_UNIVERSAL_BULK_DUMP:
         payload_p = format_dx7_universal_bulk_payload(&bulk_data_p->universal,
                                                       length_p);
+    break;
+    default:
+        break;
     }
+    if(bulk_data_p->type != BULK_DATA_UNIVERSAL_BULK_DUMP)
+    {
+        payload_p = wrap_dx7_bulk_payload(data_p,
+                                          BULK_DATA_BYTE_COUNT_TABLE[bulk_data_p->type],
+                                          length_p);
 
+    }
     return payload_p;
 }
 
@@ -361,6 +377,7 @@ uint8_t* wrap_dx7_bulk_payload(const void* data_p,
     if(wrapped_data_p)
     {
         *(TwoByte_t*) wrapped_data_p = format_payload_size(data_length);
+        //TODO: PROBLÈME ICI!!!
         memcpy(wrapped_data_p + sizeof(TwoByte_t), data_p, data_length);
         *(wrapped_data_p + sizeof(TwoByte_t) + data_length) = generate_checksum(data_p, data_length);
         if(format_length_p)
@@ -474,6 +491,7 @@ PackedVoiceParameters_t pack_voice_parameters(VoiceParameters_t parameters)
     CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_wave);
     CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, lfo_pitch_modulation_sensitivity);
     CONVERT_STRUCT_PARAMETER(parameters, packed_parameters, transpose);
+    memcpy(packed_parameters.voice_name, parameters.voice_name, VOICE_NAME_SIZE);
 
     return packed_parameters;
 }
@@ -526,6 +544,8 @@ VoiceParameters_t unpack_voice_parameters(PackedVoiceParameters_t parameters)
     CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_wave);
     CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, lfo_pitch_modulation_sensitivity);
     CONVERT_STRUCT_PARAMETER(parameters, unpacked_parameters, transpose);
+
+    memcpy(unpacked_parameters.voice_name, parameters.voice_name, VOICE_NAME_SIZE);
 
     return unpacked_parameters;
 }

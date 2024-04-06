@@ -13,7 +13,6 @@
 
 #include "engine.h"
 #include "help.h"
-#include "dx7.h"
 #include "midi.h"
 
 typedef struct olidx_engine_t
@@ -136,22 +135,22 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
     switch(sysex_p->type)
     {
         case SYSEX_TYPE_BULK:
-            if(options_p->unpack && sysex_p->bulk_data.type == BULK_DATA_PACKED_32_VOICE)
+            if(process_sysex_bulk_data(&sysex_p->bulk_data))
             {
-                //TODO: déballage complet. et déballage simple
-//                VoiceParameters_t parameters = unpack_voice_parameters();
-//                break;
+                break;
             }
         case SYSEX_TYPE_PARAMETER:
         default:
-            printf("writing payload...\n");
             file_name_p = file_name(path_to_file_name(olidx_engine.file_root_p),
                                     olidx_engine.file_number);
-            printf("file name: %s\n", file_name_p);
             file_p = fopen(file_name_p, "w+");
             if(file_p == NULL)
             {
                 OK(OH NON);
+            }
+            else
+            {
+                printf("writing file name: %s\n", file_name_p);
             }
             write_sysex_payload(file_p, data_p, length);
             fclose(file_p);
@@ -163,51 +162,66 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
     free(sysex_p);
 }
 
+int process_sysex_bulk_data(const BulkDataPayload_t* bulk_data_p)
+{
+    switch(bulk_data_p->type)
+    {
+        case BULK_DATA_PACKED_32_VOICE:
+            if(olidx_engine.unpack)
+            {
+                //TODO: déballage complet. et déballage simple
+                unpack_packed32_voice(*bulk_data_p->packed32_voice_p);
+            }
+            else
+            {
+                return 1;
+            }
+        default:
+            return 0;
+    }
+}
+
+void unpack_packed32_voice(const Packed32Voice_t voice_parameters)
+{
+    SysExData_t sysex_message;
+    sysex_message.type = SYSEX_TYPE_BULK;
+    sysex_message.bulk_data.type = BULK_DATA_VOICE_EDIT_BUFFER;
+    VoiceParameters_t parameters;
+    sysex_message.bulk_data.payload_p = &parameters;
+    int voice;
+    for(voice = 0; voice < VOICE_COUNT; ++voice)
+    {
+        printf("patch %2d\n", voice+1);
+        const char* root_p = path_to_file_name(olidx_engine.file_root_p);
+        char* file_root_p = malloc(strlen(root_p) + 1);
+        strcpy(file_root_p, root_p);
+        append_counter(&file_root_p, olidx_engine.file_number);
+        char* file_name_p = file_name(file_root_p, voice+1);
+        FILE* file_p = fopen(file_name_p, "w+");
+        parameters =  unpack_voice_parameters(voice_parameters[voice]);
+        size_t length;
+        uint8_t* payload_p = format_dx7_sysex(&sysex_message,
+                                              &length,
+                                              0);
+        printf("writing file name: %s\n", file_name_p);
+        write_sysex_payload(file_p, payload_p, length);
+        fclose(file_p);
+        free(payload_p);
+        free(file_name_p);
+        free(file_root_p);
+    }
+}
+
 char* file_name(const char* root_p, uint8_t counter)
 {
-    size_t value = strlen(olidx_engine.unpack_folder_p) + strlen(root_p) + 3 + strlen(MIDI_SYSEX_EXTENSION) + 1;
-    char* file_name_p = malloc(value);
+    char* file_name_p = malloc(strlen(olidx_engine.unpack_folder_p) + 1);
     strcpy(file_name_p, olidx_engine.unpack_folder_p);
-    strcat(file_name_p, root_p);
-    char suffix[4] = {0};
-    sprintf(suffix, "%03hhu", counter);
-    strcat(file_name_p, suffix);
-    strcat(file_name_p, MIDI_SYSEX_EXTENSION);
+    append_str(&file_name_p, root_p);
+    append_counter(&file_name_p, counter);
+    append_str(&file_name_p, MIDI_SYSEX_EXTENSION);
     return file_name_p;
 }
 
-const char* path_to_file_name(const char* path_p)
-{
-    char* root_p = strrchr(path_p, '/');
-    return (root_p == NULL)? path_p : root_p + 1;
-}
-
-char* get_extension(const char* path_p)
-{
-
-    char* extension_start_p = strrchr(path_p, '.');
-    if(strchr(extension_start_p, '/') != NULL)
-    {
-        return NULL;
-    }
-    {
-        return extension_start_p;
-    }
-}
-
-
-int is_extension_valid(const char* path_p, const char* extension_p)
-{
-    const char* extension_start_p = get_extension(path_p);
-    if(extension_start_p == NULL)
-    {
-        return 0;
-    }
-    else
-    {
-        return strcmp(extension_start_p, extension_p) == 0;
-    }
-}
 
 
 
