@@ -4,6 +4,7 @@
  *  Created on: 1 mars 2024
  *      Author: moliver
  */
+#include <string.h>
 #include "utility.h"
 #include "midi.h"
 
@@ -37,4 +38,59 @@ TwoByte_t format_payload_size(size_t size)
     byte_count.lsb = size & MIDI_DATA_MASK;
     byte_count.msb = size >> MIDI_DATA_BITS;
     return byte_count;
+}
+
+char* append_str(char** text_pp, const char* appendage_p)
+{
+    if(strlen(appendage_p) > 0)
+    {
+        size_t length = strlen(*text_pp) + strlen(appendage_p);
+        char* new_text_p = malloc(length + 1);
+        strcpy(new_text_p, *text_pp);
+        strcat(new_text_p, appendage_p);
+        free(*text_pp);
+        *text_pp = new_text_p;
+    }
+    return *text_pp;
+}
+
+char* append_counter(char** text_pp, uint8_t counter)
+{
+
+    char suffix[5] = {0};
+    sprintf(suffix, "_%03hhu", counter);
+    return append_str(text_pp, suffix);
+}
+
+const char* path_to_file_name(const char* path_p)
+{
+    char* root_p = strrchr(path_p, '/');
+    return (root_p == NULL)? path_p : root_p + 1;
+}
+
+char* get_extension(const char* path_p)
+{
+
+    char* extension_start_p = strrchr(path_p, '.');
+    if(strchr(extension_start_p, '/') != NULL)
+    {
+        return NULL;
+    }
+    {
+        return extension_start_p;
+    }
+}
+
+
+int is_extension_valid(const char* path_p, const char* extension_p)
+{
+    const char* extension_start_p = get_extension(path_p);
+    if(extension_start_p == NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        return strcmp(extension_start_p, extension_p) == 0;
+    }
 }
