@@ -307,6 +307,7 @@ uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                                       length_p);
     break;
     default:
+        return NULL;
         break;
     }
     if(bulk_data_p->type != BULK_DATA_UNIVERSAL_BULK_DUMP)
