@@ -17,14 +17,14 @@ int get_checksum(const void* buffer, size_t buffer_size)
     {
         checksum += (uint32_t) byte_p[position];
     }
-    checksum = (checksum & 0x7F);
+    checksum = (checksum & 0xFF);
     return checksum;
 }
 
 uint8_t generate_checksum(const void* buffer, size_t buffze_size)
 {
     uint8_t checksum = get_checksum(buffer, buffze_size);
-    return 0x7F & ~checksum;
+    return (0x7F & ~checksum) + 1;
 }
 
 uint16_t get_payload_size(TwoByte_t byte_count)
