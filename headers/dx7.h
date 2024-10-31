@@ -289,6 +289,7 @@ typedef struct ParameterChangeHeader_t
 {
     uint8_t group_l   : 2;
     uint8_t group_h   : 5;
+    uint8_t           : 1;
     uint8_t parameter;
 } ParameterChangeHeader_t;
 
@@ -400,13 +401,27 @@ extern const SysExData_t SYSEX_DATA_INITIALISER;
  * formats dx7 SysEx payload and return pointer to the payload.
  */
 uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id);
+
+/**
+ * returns a pointer to an interpreted dx7 SysEx structure.
+ * @oaram payload_p the bytes of data from the MIDI sysex file.
+ */
 SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length);
 
+/**
+ * returns pointer to a formatted  dx7 sysex byte bulk payload.
+ * @param bulk_data_p pointer to a bulk data structure.
+ */
 uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                  size_t* length_p);
 
+/**
+ * returns pointer to a formatted dx7 sysex byte universal bulk payload.
+ * @param data_p pointer to a universal bulk data structure.
+ */
 uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
                                            size_t* data_length_p);
+
 /**
  * wraps a bulk data payload with two byte byte count and checksum.
  * returns pointer to the wrapped data.
@@ -414,6 +429,12 @@ uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* dat
 uint8_t* wrap_dx7_bulk_payload(const void* data_p,
                                size_t data_length,
                                size_t* format_length_p);
+
+/**
+ * Formats a dx7 parameter payload.
+ * @returns a formated DX7 SysEx parameter.
+ * @param parameter_p pointer to a parameter structure.
+ */
 uint8_t* format_dx7_parameter_payload(const ParameterPayload_t* parameter_p,
                                       size_t* length_p);
 ParameterChangeHeader_t get_parameter_header(const ParameterPayload_t* parameter_p);

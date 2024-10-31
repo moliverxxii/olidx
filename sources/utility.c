@@ -29,7 +29,7 @@ uint8_t generate_checksum(const void* buffer, size_t buffze_size)
 
 uint16_t get_payload_size(TwoByte_t byte_count)
 {
-    return ((uint16_t) byte_count.msb << 7) + (uint16_t) byte_count.lsb;
+    return ((uint16_t) byte_count.msb << MIDI_DATA_BITS) + (uint16_t) byte_count.lsb;
 }
 
 TwoByte_t format_payload_size(size_t size)

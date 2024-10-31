@@ -139,6 +139,7 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
             {
                 break;
             }
+            /* no break */
         case SYSEX_TYPE_PARAMETER:
         default:
             file_name_p = file_name(path_to_file_name(olidx_engine.file_root_p),
@@ -176,9 +177,11 @@ int process_sysex_bulk_data(const BulkDataPayload_t* bulk_data_p)
             {
                 return 1;
             }
+            break;
         default:
-            return 0;
+            break;
     }
+    return 0;
 }
 
 void unpack_packed32_voice(const Packed32Voice_t voice_parameters)
