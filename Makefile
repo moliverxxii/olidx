@@ -28,7 +28,10 @@ $(DIRS):
 	mkdir -p $@
 
 clean:
-	rm -fr $(OBJECT_DIR) $(DEPENDENCY_DIR) $(PROJECT)
+	rm -fr $(DIRS) $(PROJECT)
+
+rebuild: clean all
+
 
 ANALYZER = $(shell /usr/local/bin/brew --prefix llvm)/bin/scan-build
 analysis: clean
