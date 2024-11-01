@@ -400,33 +400,33 @@ extern const SysExData_t SYSEX_DATA_INITIALISER;
 /**
  * formats dx7 SysEx payload and return pointer to the payload.
  */
-uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id);
+uint8_t* dx7_format_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uint8_t device_id);
 
 /**
  * returns a pointer to an interpreted dx7 SysEx structure.
  * @oaram payload_p the bytes of data from the MIDI sysex file.
  */
-SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length);
+SysExData_t* dx7_get_sysex(const uint8_t* payload_p, size_t length);
 
 /**
  * returns pointer to a formatted  dx7 sysex byte bulk payload.
  * @param bulk_data_p pointer to a bulk data structure.
  */
-uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
+uint8_t* dx7_format_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                  size_t* length_p);
 
 /**
  * returns pointer to a formatted dx7 sysex byte universal bulk payload.
  * @param data_p pointer to a universal bulk data structure.
  */
-uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
+uint8_t* dx7_format_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
                                            size_t* data_length_p);
 
 /**
  * wraps a bulk data payload with two byte byte count and checksum.
  * returns pointer to the wrapped data.
  */
-uint8_t* wrap_dx7_bulk_payload(const void* data_p,
+uint8_t* dx7_wrap_bulk_payload(const void* data_p,
                                size_t data_length,
                                size_t* format_length_p);
 
@@ -435,13 +435,15 @@ uint8_t* wrap_dx7_bulk_payload(const void* data_p,
  * @returns a formated DX7 SysEx parameter.
  * @param parameter_p pointer to a parameter structure.
  */
-uint8_t* format_dx7_parameter_payload(const ParameterPayload_t* parameter_p,
+uint8_t* dx7_format_parameter_payload(const ParameterPayload_t* parameter_p,
                                       size_t* length_p);
-ParameterChangeHeader_t get_parameter_header(const ParameterPayload_t* parameter_p);
-SysexType_t get_header_info(const SysexHeader_t* header_p);
-BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p);
+ParameterChangeHeader_t dx7_get_parameter_header(const ParameterPayload_t* parameter_p);
+SysexType_t dx7_get_header(const SysexHeader_t* header_p);
+BulkData_t dx7_get_bulk_data_header(const BulkDataHeader_t* header_p);
 
-PackedVoiceParameters_t pack_voice_parameters(VoiceParameters_t parameters);
-VoiceParameters_t unpack_voice_parameters(PackedVoiceParameters_t parameters);
+PackedVoiceParameters_t dx7_pack_voice_parameters(VoiceParameters_t parameters);
+VoiceParameters_t dx7_unpack_voice_parameters(PackedVoiceParameters_t parameters);
+
+char* dx7_copy_patch_name(VoiceParameters_t parameters);
 
 #endif /* HEADERS_DX7_H_ */

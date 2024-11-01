@@ -68,7 +68,7 @@ const char* path_to_file_name(const char* path_p)
     return (root_p == NULL)? path_p : root_p + 1;
 }
 
-char* get_extension(const char* path_p)
+const char* get_extension(const char* path_p)
 {
 
     char* extension_start_p = strrchr(path_p, '.');
@@ -79,6 +79,26 @@ char* get_extension(const char* path_p)
     {
         return extension_start_p;
     }
+}
+
+char* strip_extension(const char* path_p)
+{
+    const char* extension_p = get_extension(path_p);
+    char* file_name_p = NULL;
+    if(extension_p == NULL)
+    {
+        file_name_p = malloc(strlen(path_p) + 1);
+        strcpy(file_name_p, path_p);
+    }
+    else
+    {
+        size_t length = extension_p - path_p + 1;
+        file_name_p = malloc(length);
+        strncpy(file_name_p, path_p, length - 1);
+        file_name_p[length-1] = 0;
+    }
+
+    return file_name_p;
 }
 
 
@@ -92,5 +112,23 @@ int is_extension_valid(const char* path_p, const char* extension_p)
     else
     {
         return strcmp(extension_start_p, extension_p) == 0;
+    }
+}
+
+static const char* const FORBIDDEN_CHARACTERS = ".\t\n ";
+
+int is_valid_byte(int byte)
+{
+    if((byte & ~0x7F) != 0)
+    {
+        return 0;
+    }
+    else if(strchr(FORBIDDEN_CHARACTERS, byte) != NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
     }
 }

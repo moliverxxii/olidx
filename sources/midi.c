@@ -11,7 +11,7 @@
 const char* const MIDI_SYSEX_EXTENSION = ".syx";
 
 
-uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p)
+uint8_t* midi_get_next_sysex_payload(FILE* file_p, int* size_p)
 {
     int byte;
     do
@@ -54,7 +54,7 @@ uint8_t* get_next_sysex_payload(FILE* file_p, int* size_p)
     return buffer_p;
 }
 
-int write_sysex_payload(FILE* file_p,
+int midi_write_sysex_payload(FILE* file_p,
                         const uint8_t* payload_p,
                         size_t payload_length)
 {

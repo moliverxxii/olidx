@@ -6,6 +6,7 @@
  */
 
 #include <string.h>
+#include <ctype.h>
 
 #include "dx7.h"
 #include "midi.h"
@@ -143,7 +144,7 @@ const SysExData_t SYSEX_DATA_INITIALISER =
     }
 };
 
-uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p,
+uint8_t* dx7_format_sysex(const SysExData_t* sysex_data_p,
                           size_t* length_p,
                           uint8_t device_id)
 {
@@ -169,12 +170,12 @@ uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p,
             header_data_length = sizeof(BulkDataHeader_t);
             header.substatus = 0;
             bulk_header.format = BULK_DATA_FORMAT_TABLE[sysex_data_p->bulk_data.type];
-            payload_p = format_dx7_bulk_payload(&sysex_data_p->bulk_data,
+            payload_p = dx7_format_bulk_payload(&sysex_data_p->bulk_data,
                                                 &payload_length);
             break;
         case SYSEX_TYPE_PARAMETER:
-            parameter_header = get_parameter_header(&sysex_data_p->parameter_change);
-            payload_p = format_dx7_parameter_payload(&sysex_data_p->parameter_change,
+            parameter_header = dx7_get_parameter_header(&sysex_data_p->parameter_change);
+            payload_p = dx7_format_parameter_payload(&sysex_data_p->parameter_change,
                                                      &payload_length);
             header_data_p = &parameter_header;
             header_data_length = sizeof(ParameterChangeHeader_t);
@@ -205,7 +206,7 @@ uint8_t* format_dx7_sysex(const SysExData_t* sysex_data_p,
     return sysex_message_p;
 }
 
-SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
+SysExData_t* dx7_get_sysex(const uint8_t* payload_p, size_t length)
 {
     const uint8_t* head_p = payload_p;
     SysexHeader_t header;
@@ -213,7 +214,7 @@ SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
     head_p += sizeof(SysexHeader_t);
     SysExData_t* data_p = malloc(sizeof(SysExData_t));
     *data_p = SYSEX_DATA_INITIALISER;
-    data_p->type = get_header_info(&header);
+    data_p->type = dx7_get_header(&header);
     printf("Sysex type: %s\n", SYSEX_TYPE_NAME_TABLE[data_p->type]);
     switch(data_p->type)
     {
@@ -222,7 +223,7 @@ SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
             const ParameterChangeHeader_t* parameter_header_p =
                     (const ParameterChangeHeader_t*) (head_p);
             head_p += sizeof(ParameterChangeHeader_t);
-            printf("Parameter group:   %01hhu%01hhu\n"
+            printf("Parameter group:   %01hhu,%01hhu\n"
                    "Parameter number: %3hhu\n",
                    parameter_header_p->group_h,
                    parameter_header_p->group_l,
@@ -233,7 +234,7 @@ SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
         {
             const BulkDataHeader_t* bulk_header_p = (const BulkDataHeader_t*) head_p;
             head_p += sizeof(BulkDataHeader_t);
-            data_p->bulk_data.type = get_bulk_data_header_info(bulk_header_p);
+            data_p->bulk_data.type = dx7_get_bulk_data_header(bulk_header_p);
 
         }
         break;
@@ -287,7 +288,7 @@ SysExData_t* get_dx7_sysex(const uint8_t* payload_p, size_t length)
 }
 
 
-uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
+uint8_t* dx7_format_bulk_payload(const BulkDataPayload_t* bulk_data_p,
                                  size_t* length_p)
 {
     void* payload_p = NULL;
@@ -303,7 +304,7 @@ uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
         data_p = *(void**) bulk_data_p->payload_p;
         break;
     case BULK_DATA_UNIVERSAL_BULK_DUMP:
-        payload_p = format_dx7_universal_bulk_payload(&bulk_data_p->universal,
+        payload_p = dx7_format_universal_bulk_payload(&bulk_data_p->universal,
                                                       length_p);
     break;
     default:
@@ -312,7 +313,7 @@ uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
     }
     if(bulk_data_p->type != BULK_DATA_UNIVERSAL_BULK_DUMP)
     {
-        payload_p = wrap_dx7_bulk_payload(data_p,
+        payload_p = dx7_wrap_bulk_payload(data_p,
                                           BULK_DATA_BYTE_COUNT_TABLE[bulk_data_p->type],
                                           length_p);
 
@@ -320,7 +321,7 @@ uint8_t* format_dx7_bulk_payload(const BulkDataPayload_t* bulk_data_p,
     return payload_p;
 }
 
-uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
+uint8_t* dx7_format_universal_bulk_payload(const UniversalBulkDataPayload_t* data_p,
                                            size_t* data_length_p)
 {
     uint8_t* payload_p = NULL;
@@ -349,7 +350,7 @@ uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* dat
                              : data_p->payload_p;
         memcpy(block_payload_p, block_p, UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[data_p->type]);
         size_t length = 0;
-        block_payload_pp[repeat] = wrap_dx7_bulk_payload(block_payload_p,
+        block_payload_pp[repeat] = dx7_wrap_bulk_payload(block_payload_p,
                                                          format_length,
                                                          &length);
         payload_length += length;
@@ -369,7 +370,7 @@ uint8_t* format_dx7_universal_bulk_payload(const UniversalBulkDataPayload_t* dat
     return payload_p;
 }
 
-uint8_t* wrap_dx7_bulk_payload(const void* data_p,
+uint8_t* dx7_wrap_bulk_payload(const void* data_p,
                                size_t data_length,
                                size_t* format_length_p)
 {
@@ -389,7 +390,7 @@ uint8_t* wrap_dx7_bulk_payload(const void* data_p,
     return wrapped_data_p;
 }
 
-uint8_t* format_dx7_parameter_payload(const ParameterPayload_t* parameter_p,
+uint8_t* dx7_format_parameter_payload(const ParameterPayload_t* parameter_p,
                                       size_t* length_p)
 {
     //TODO: convert.
@@ -400,22 +401,22 @@ uint8_t* format_dx7_parameter_payload(const ParameterPayload_t* parameter_p,
     return NULL;
 }
 
-ParameterChangeHeader_t get_parameter_header(const ParameterPayload_t* parameter_p)
+ParameterChangeHeader_t dx7_get_parameter_header(const ParameterPayload_t* parameter_p)
 {
     //TODO: convert.
     return PARAMETER_HEADER_INITIALISER;
 }
 
 
-SysexType_t get_header_info(const SysexHeader_t* header_p)
+SysexType_t dx7_get_header(const SysexHeader_t* header_p)
 {
     printf("Manufacturer: %#4x\n", header_p->id);
     printf("Substatus:    %#4x\n", header_p->substatus);
-    printf("Device id:    %#4x\n", header_p->device);
+    printf("Device number:%4u\n",  header_p->device + 1);
     return header_p->substatus;
 }
 
-BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p)
+BulkData_t dx7_get_bulk_data_header(const BulkDataHeader_t* header_p)
 {
     BulkData_t type;
     switch(header_p->format)
@@ -443,7 +444,7 @@ BulkData_t get_bulk_data_header_info(const BulkDataHeader_t* header_p)
     return type;
 }
 
-PackedVoiceParameters_t pack_voice_parameters(VoiceParameters_t parameters)
+PackedVoiceParameters_t dx7_pack_voice_parameters(VoiceParameters_t parameters)
 {
     PackedVoiceParameters_t packed_parameters;
 
@@ -497,7 +498,7 @@ PackedVoiceParameters_t pack_voice_parameters(VoiceParameters_t parameters)
     return packed_parameters;
 }
 
-VoiceParameters_t unpack_voice_parameters(PackedVoiceParameters_t parameters)
+VoiceParameters_t dx7_unpack_voice_parameters(PackedVoiceParameters_t parameters)
 {
     VoiceParameters_t unpacked_parameters;
     for(int operator = OPERATOR_1; operator <= OPERATOR_6; ++operator)
@@ -550,4 +551,27 @@ VoiceParameters_t unpack_voice_parameters(PackedVoiceParameters_t parameters)
 
     return unpacked_parameters;
 }
+
+char*
+dx7_copy_patch_name(VoiceParameters_t parameters)
+{
+    char* voice_name_p = malloc(sizeof(parameters.voice_name) + 1);
+    strncpy(voice_name_p, parameters.voice_name, sizeof(parameters.voice_name));
+    char* character_p = voice_name_p + sizeof(parameters.voice_name);
+    do
+    {
+        *character_p = 0;
+        character_p--;
+    } while(isspace(*character_p));
+    for(;character_p>=voice_name_p; --character_p)
+    {
+        if(!is_valid_byte(*character_p))
+        {
+            *character_p = '_';
+        }
+    }
+
+    return voice_name_p;
+}
+
 

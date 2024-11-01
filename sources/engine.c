@@ -34,8 +34,7 @@ int run_engine(int argc, char* argv[])
     olidx_engine.unpack_folder_p = options.unpack_folder_p;
     if(olidx_engine.file_root_p)
     {
-        printf("file: %s\n", olidx_engine.file_root_p);
-        printf("extension: %s\n", get_extension(olidx_engine.file_root_p));
+        printf("File: %s\n", olidx_engine.file_root_p);
     }
     else
     {
@@ -52,15 +51,15 @@ int run_engine(int argc, char* argv[])
     olidx_engine.file_number = 0;
     do
     {
-        uint8_t* buffer_p = get_next_sysex_payload(midi_file_p, &size);
+        uint8_t* buffer_p = midi_get_next_sysex_payload(midi_file_p, &size);
         if(buffer_p)
         {
+            printf("--------------\n");
             printf("Payload no: %d\n", ++olidx_engine.file_number);
             printf("Sysex size: %dB\n", size);
             process_sysex_data(buffer_p, size, &options);
+            free(buffer_p);
         }
-        free(buffer_p);
-        printf("---------\n");
     } while(size > 0);
     printf("fin\n");
     return EXIT_SUCCESS;
@@ -129,9 +128,10 @@ const char* option_handler(int argc, char* argv[], ProgramOptions_t* options_p)
 
 void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_t* options_p)
 {
-    SysExData_t* sysex_p = get_dx7_sysex(data_p, length);
+    SysExData_t* sysex_p = dx7_get_sysex(data_p, length);
     char* file_name_p;
     FILE* file_p;
+    char* temp_name_p;
     switch(sysex_p->type)
     {
         case SYSEX_TYPE_BULK:
@@ -142,8 +142,10 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
             /* no break */
         case SYSEX_TYPE_PARAMETER:
         default:
-            file_name_p = file_name(path_to_file_name(olidx_engine.file_root_p),
-                                    olidx_engine.file_number);
+            temp_name_p = strip_extension(path_to_file_name(olidx_engine.file_root_p));
+            append_counter(&temp_name_p, olidx_engine.file_number);
+            file_name_p = file_name(temp_name_p);
+            free(temp_name_p);
             file_p = fopen(file_name_p, "w+");
             if(file_p == NULL)
             {
@@ -151,9 +153,9 @@ void process_sysex_data(const void* data_p, size_t length, const ProgramOptions_
             }
             else
             {
-                printf("writing file name: %s\n", file_name_p);
+                printf("writing file: %s\n", file_name_p);
             }
-            write_sysex_payload(file_p, data_p, length);
+            midi_write_sysex_payload(file_p, data_p, length);
             fclose(file_p);
             free(file_name_p);
             file_name_p = NULL;
@@ -194,33 +196,35 @@ void unpack_packed32_voice(const Packed32Voice_t voice_parameters)
     int voice;
     for(voice = 0; voice < VOICE_COUNT; ++voice)
     {
-        printf("patch %2d\n", voice+1);
-        const char* root_p = path_to_file_name(olidx_engine.file_root_p);
-        char* file_root_p = malloc(strlen(root_p) + 1);
-        strcpy(file_root_p, root_p);
+        parameters =  dx7_unpack_voice_parameters(voice_parameters[voice]);
+        char* patch_name_p = dx7_copy_patch_name(parameters);
+        printf("patch %2d: %*s ", voice+1, VOICE_NAME_SIZE, patch_name_p);
+        char* file_root_p = strip_extension(path_to_file_name(olidx_engine.file_root_p));
         append_counter(&file_root_p, olidx_engine.file_number);
-        char* file_name_p = file_name(file_root_p, voice+1);
+        append_counter(&file_root_p, voice+1);
+        append_str(&file_root_p, "_");
+        append_str(&file_root_p, patch_name_p);
+        char* file_name_p = file_name(file_root_p);
         FILE* file_p = fopen(file_name_p, "w+");
-        parameters =  unpack_voice_parameters(voice_parameters[voice]);
         size_t length;
-        uint8_t* payload_p = format_dx7_sysex(&sysex_message,
+        uint8_t* payload_p = dx7_format_sysex(&sysex_message,
                                               &length,
                                               0);
-        printf("writing file name: %s\n", file_name_p);
-        write_sysex_payload(file_p, payload_p, length);
+        printf("writing file: %s\n", file_name_p);
+        midi_write_sysex_payload(file_p, payload_p, length);
         fclose(file_p);
         free(payload_p);
         free(file_name_p);
         free(file_root_p);
+        free(patch_name_p);
     }
 }
 
-char* file_name(const char* root_p, uint8_t counter)
+char* file_name(const char* root_p)
 {
     char* file_name_p = malloc(strlen(olidx_engine.unpack_folder_p) + 1);
     strcpy(file_name_p, olidx_engine.unpack_folder_p);
     append_str(&file_name_p, root_p);
-    append_counter(&file_name_p, counter);
     append_str(&file_name_p, MIDI_SYSEX_EXTENSION);
     return file_name_p;
 }
