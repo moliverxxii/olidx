@@ -179,7 +179,33 @@ int process_sysex_bulk_data(const BulkDataPayload_t* bulk_data_p)
             {
                 return 1;
             }
+        break;
+        case BULK_DATA_UNIVERSAL_BULK_DUMP:
+            process_sysex_universal_bulk_data(&bulk_data_p->universal);
+        break;
+        default:
+        break;
+    }
+    return 0;
+}
+
+int process_sysex_universal_bulk_data(const UniversalBulkDataPayload_t* bulk_data_p)
+{
+    switch(bulk_data_p->type)
+    {
+        case UNIVERSAL_BULK_DATA_PERFORMANCE_EDIT_BUFFER:
+        case UNIVERSAL_BULK_DATA_PACKED_32_PERFORMANCE:
+        case UNIVERSAL_BULK_DATA_SYSTEM_SET_UP:
+        case UNIVERSAL_BULK_DATA_MICRO_TUNING_EDIT_BUFFER:
+        case UNIVERSAL_BULK_DATA_MICRO_TUNING_MEMORY_0:
+        case UNIVERSAL_BULK_DATA_MICRO_TUNING_MEMORY_1:
+        case UNIVERSAL_BULK_DATA_MICRO_TUNING_CARTRIDGE:
+        case UNIVERSAL_BULK_DATA_FRACTIONAL_SCALING_EDIT_BUFFER:
+        case UNIVERSAL_BULK_DATA_FRACTIONAL_SCALING_CARTRIDGE:
+        case UNIVERSAL_BULK_DATA_COUNT:
+            printf("Universal: %s\n", UNIVERSAL_BULK_DATA_NAME_TABLE[bulk_data_p->type]);
             break;
+        case UNIVERSAL_BULK_DATA_ERROR:
         default:
             break;
     }

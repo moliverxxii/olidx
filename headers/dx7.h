@@ -114,10 +114,10 @@ typedef enum ParameterChange_t
 {
     PARAMETER_CHANGE_VOICE = 0,
     PARAMETER_CHANGE_SUPPLEMENT,
-    PARAMETER_CHANGE_PERFORMANCE,
-    PARAMETER_CHANGE_SYSTEM_SET_UP,
     PARAMETER_CHANGE_MICRO_TUNING,
     PARAMETER_CHANGE_FRACTIONAL_SCALING,
+    PARAMETER_CHANGE_PERFORMANCE,
+    PARAMETER_CHANGE_SYSTEM_SET_UP,
     PARAMETER_CHANGE_COUNT
 } ParameterChange_t;
 
@@ -287,8 +287,8 @@ typedef struct SysexHeader_t
 
 typedef struct ParameterChangeHeader_t
 {
-    uint8_t group_l   : 2;
-    uint8_t group_h   : 5;
+    uint8_t group_h   : 2;
+    uint8_t group_g   : 5;
     uint8_t           : 1;
     uint8_t parameter;
 } ParameterChangeHeader_t;
@@ -383,6 +383,7 @@ extern const char* const UNIVERSAL_BULK_DATA_FORMAT_TABLE[UNIVERSAL_BULK_DATA_CO
 extern const char* const UNIVERSAL_BULK_DATA_NAME_TABLE[UNIVERSAL_BULK_DATA_COUNT];
 
 /* constants */
+extern const ParameterChangeHeader_t PARAMETER_CHANGE_GROUP_TABLE[PARAMETER_CHANGE_COUNT];
 extern const uint8_t BULK_DATA_FORMAT_TABLE[BULK_DATA_FORMAT_COUNT];
 extern const size_t BULK_DATA_BYTE_COUNT_TABLE[BULK_DATA_FORMAT_COUNT];
 extern const size_t UNIVERSAL_BULK_DATA_BYTE_COUNT_TABLE[UNIVERSAL_BULK_DATA_COUNT];
@@ -407,7 +408,8 @@ uint8_t* dx7_format_sysex(const SysExData_t* sysex_data_p, size_t* length_p, uin
  * @oaram payload_p the bytes of data from the MIDI sysex file.
  */
 SysExData_t* dx7_get_sysex(const uint8_t* payload_p, size_t length);
-
+ParameterPayload_t dx7_get_sysex_parameter(const uint8_t* payload_p);
+BulkDataPayload_t dx7_get_sysex_bulk_data(const uint8_t* bulk_payload_p);
 /**
  * returns pointer to a formatted  dx7 sysex byte bulk payload.
  * @param bulk_data_p pointer to a bulk data structure.

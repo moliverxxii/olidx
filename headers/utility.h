@@ -6,6 +6,7 @@
 
 #define GET_AMOUNT(BITS) (2 << BITS)
 #define OK(MESSAGE) printf("ok number " #MESSAGE "!\n")
+#define SIZE_OF_FIELD(STRUCT_TYPE, FIELD) sizeof(((STRUCT_TYPE*) 0)->FIELD)
 
 /**
  * Most Significant Byte first!
